@@ -101,12 +101,12 @@
         <img id="preview-img" src="" alt="Ảnh vừa chụp">
       </div>
       
-      <h3 style="color: #ffffff; font-weight: 800; font-size: 1.15rem; margin-bottom: -5px;">Ảnh này đã rõ nét chưa?</h3>
-      <p style="color: #94a3b8; font-size: 0.85rem;">Hãy đảm bảo ảnh không bị mờ trước khi lưu.</p>
+      <h3 style="color: #ffffff; font-weight: 800; font-size: 1.15rem; margin-bottom: -5px;">Ảnh này đã chuẩn chưa?</h3>
+      <p style="color: #94a3b8; font-size: 0.85rem;">Hãy đảm bảo ảnh chụp thẳng và không bị mờ.</p>
 
       <div class="flex-row">
         <button class="btn btn-secondary" onclick="retakePhoto()">🔄 Chụp lại</button>
-        <button id="btn-save" class="btn btn-primary" onclick="confirmAndSave()">✅ Xác nhận</button>
+        <button id="btn-save" class="btn btn-primary" onclick="confirmAndSave()">✅ Lưu ngay</button>
       </div>
     </div>
 
@@ -116,7 +116,7 @@
       <h3 style="color: #34D399; font-weight: 800; font-size: 1.2rem;">Đăng Ký Thành Công!</h3>
       
       <div class="info-group">
-        <label>Mã ID Nhân Sự</label>
+        <label>Mã ID Cấp Mới</label>
         <div class="flex-row-between">
           <div id="success-id" class="value highlight">---</div>
           <button class="copy-btn" onclick="copyID('success-id', this)">
@@ -126,7 +126,7 @@
       </div>
       
       <div class="info-group">
-        <label>Thời Gian Ghi Nhận</label>
+        <label>Thời Gian Đăng Ký</label>
         <div id="success-time" class="value">---</div>
       </div>
 
@@ -222,7 +222,7 @@
 
     async function runAutoDetectionLoop() {
       const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.5 });
-      const targetTimeMs = 500; // Giữ mặt 0.5s để chụp
+      const targetTimeMs = 500; // Giữ mặt chuẩn trong 0.5s để chụp
       const frameIntervalMs = 25; 
       let lastTime = Date.now();
 
@@ -233,27 +233,73 @@
         if (now - lastTime >= frameIntervalMs) {
           lastTime = now;
           try {
+            // Lấy cả Face Descriptor và Landmarks (Các điểm neo trên khuôn mặt)
             const detection = await faceapi.detectSingleFace(video, options).withFaceLandmarks().withFaceDescriptor();
             
             if (detection) {
-              const box = detection.detection.box, vCenter = { x: video.videoWidth / 2, y: video.videoHeight / 2 }, fCenter = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+              const box = detection.detection.box;
+              const vCenter = { x: video.videoWidth / 2, y: video.videoHeight / 2 };
+              const fCenter = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
               
+              // 1. KIỂM TRA KHUÔN MẶT CÓ NẰM GIỮA KHUNG TRÒN KHÔNG
               if (Math.abs(fCenter.x - vCenter.x) < 180 && Math.abs(fCenter.y - vCenter.y) < 180) {
-                scanTimer += frameIntervalMs; 
-                collectedDescriptors.push(detection.descriptor);
                 
-                progressBar.style.width = `${Math.min(100, (scanTimer / targetTimeMs) * 100)}%`; 
-                guideCircle.classList.add('active');
-                statusBox.innerText = "Giữ cố định... đang chụp";
-                statusBox.style.color = "#34d399"; 
+                // 2. KIỂM TRA TƯ THẾ ĐẦU (PHẢI NHÌN THẲNG, KHÔNG NGHIÊNG)
+                const landmarks = detection.landmarks;
                 
-                if (scanTimer >= targetTimeMs) { 
-                  isScanningActive = false; 
-                  processCapturedPhoto(); 
-                  return; 
+                // Hàm tính tâm điểm của mắt
+                const getCenter = (pts) => {
+                  let sumX = 0, sumY = 0;
+                  pts.forEach(pt => { sumX += pt.x; sumY += pt.y; });
+                  return { x: sumX / pts.length, y: sumY / pts.length };
+                };
+                
+                const leCenter = getCenter(landmarks.getLeftEye());
+                const reCenter = getCenter(landmarks.getRightEye());
+                const noseTip = landmarks.getNose()[3]; // Đỉnh mũi
+                
+                // Tính góc nghiêng (Roll)
+                const dx = reCenter.x - leCenter.x;
+                const dy = reCenter.y - leCenter.y;
+                const rollAngle = Math.abs(Math.atan2(dy, dx) * 180 / Math.PI);
+                // Nếu góc lệch quá 10 độ so với đường ngang
+                const isHeadTilted = rollAngle > 10 && rollAngle < 170; 
+                
+                // Tính độ quay trái/phải (Yaw) dựa trên đỉnh mũi so với tâm 2 mắt
+                const eyeCenterX = (leCenter.x + reCenter.x) / 2;
+                const eyeDist = Math.sqrt(dx*dx + dy*dy);
+                const yawOffset = Math.abs(noseTip.x - eyeCenterX) / eyeDist;
+                // Nếu mũi lệch quá 22% khỏi tâm
+                const isHeadTurned = yawOffset > 0.22; 
+
+                // Nếu nghiêng đầu hoặc quay đi chỗ khác -> Cảnh báo
+                if (isHeadTilted) {
+                  resetCountdown("⚠️ Vui lòng không nghiêng đầu");
+                } else if (isHeadTurned) {
+                  resetCountdown("⚠️ Vui lòng nhìn thẳng vào camera");
+                } else {
+                  // Khuôn mặt hoàn toàn chuẩn -> Bắt đầu quét & chụp
+                  scanTimer += frameIntervalMs; 
+                  collectedDescriptors.push(detection.descriptor);
+                  
+                  progressBar.style.width = `${Math.min(100, (scanTimer / targetTimeMs) * 100)}%`; 
+                  guideCircle.classList.add('active');
+                  statusBox.innerText = "Giữ cố định... đang chụp";
+                  statusBox.style.color = "#34d399"; 
+                  
+                  // Đủ 0.5s thì khóa ảnh
+                  if (scanTimer >= targetTimeMs) { 
+                    isScanningActive = false; 
+                    processCapturedPhoto(); 
+                    return; 
+                  }
                 }
-              } else { resetCountdown("⚠ Hãy đưa mặt vào giữa khung tròn"); }
-            } else { resetCountdown("🔍 Đang tìm khuôn mặt..."); }
+              } else { 
+                resetCountdown("⚠ Hãy đưa mặt vào giữa khung tròn"); 
+              }
+            } else { 
+              resetCountdown("🔍 Đang tìm khuôn mặt..."); 
+            }
           } catch (err) {}
         }
         if (isScanningActive) requestAnimationFrame(detectFrame);
@@ -262,6 +308,7 @@
       requestAnimationFrame(detectFrame);
     }
 
+    // Reset lại thanh tiến trình nếu người dùng di chuyển lỗi
     function resetCountdown(msg) {
       if (scanTimer > 0) { 
         scanTimer = 0; progressBar.style.width = '0%'; guideCircle.classList.remove('active'); 
@@ -273,17 +320,17 @@
 
     // CHỤP XONG -> CHUYỂN SANG MÀN HÌNH XÁC NHẬN
     async function processCapturedPhoto() {
-      video.pause(); // Đóng băng camera
+      video.pause(); 
       
       const canvas = document.createElement('canvas'); canvas.width = video.videoWidth; canvas.height = video.videoHeight;
       const ctx = canvas.getContext('2d');
-      // Lật ảnh cho đúng chiều camera trước khi xuất ra
+      // Lật ảnh cho đúng chiều camera trước khi xuất
       if (currentFacingMode === "user") { ctx.translate(canvas.width, 0); ctx.scale(-1, 1); }
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
       const avgDescriptor = getAverageDescriptor(collectedDescriptors);
       
-      // Chống trùng lặp sớm (Nếu trùng thì bắt chụp lại luôn, không cần hỏi)
+      // Chống trùng lặp (nếu trùng mặt cũ, bắt chụp lại ngay)
       if (existingFaceMatcher) {
         const matchResult = existingFaceMatcher.findBestMatch(new Float32Array(avgDescriptor));
         if (matchResult.label !== "unknown") {
@@ -292,30 +339,25 @@
         }
       }
 
-      // Lưu lại vào bộ nhớ tạm
       tempDescriptor = avgDescriptor;
       tempImageBase64 = canvas.toDataURL('image/jpeg', 0.85);
 
-      // Ẩn màn hình Camera -> Hiện màn hình Xác Nhận
+      // Mở thẻ Xác Nhận
       document.getElementById('section-scan').style.display = 'none';
-      document.getElementById('section-confirm').style.display = 'flex';
+      document.getElementById('section-confirm').style.display = 'block';
       document.getElementById('preview-img').src = tempImageBase64;
       document.getElementById('header-subtitle').innerText = "Vui lòng kiểm tra lại ảnh";
     }
 
     // NÚT "CHỤP LẠI"
     function retakePhoto() {
-      // Đổi UI về lại Camera
       document.getElementById('section-confirm').style.display = 'none';
       document.getElementById('section-scan').style.display = 'flex';
       document.getElementById('header-subtitle').innerText = "Hệ thống sẽ tự động chụp ảnh";
       
-      // Khởi động lại vòng lặp quét
       video.play();
-      scanTimer = 0; 
-      collectedDescriptors = []; 
-      progressBar.style.width = '0%';
-      guideCircle.classList.remove('active');
+      scanTimer = 0; collectedDescriptors = []; 
+      progressBar.style.width = '0%'; guideCircle.classList.remove('active');
       isScanningActive = true;
       runAutoDetectionLoop();
     }
@@ -326,7 +368,7 @@
       btnSave.disabled = true;
       btnSave.innerHTML = "⏳ Đang xử lý...";
 
-      // Sinh ID
+      // Sinh ID tự động
       const now = new Date();
       const yy = String(now.getFullYear()).slice(-2), mm = String(now.getMonth() + 1).padStart(2, '0'), dd = String(now.getDate()).padStart(2, '0');
       const datePrefix = yy + mm + dd; 
@@ -338,11 +380,10 @@
 
       const timeWeb = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')} ${dd}/${mm}/${now.getFullYear()}`;
 
-      // Chuyển sang màn hình Thành Công ngay lập tức
       document.getElementById('section-confirm').style.display = 'none';
       showSuccessScreen(newId, timeWeb, tempImageBase64);
 
-      // Gửi ngầm dữ liệu lên Apps Script
+      // Đẩy dữ liệu lên Apps Script ngầm
       const payload = { id: newId, faceData: JSON.stringify(tempDescriptor), time: timeWeb, imageBase64: tempImageBase64 };
       fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) })
         .then(response => response.json())
