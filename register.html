@@ -24,9 +24,10 @@
     .face-guide-circle { position: absolute; width: 210px; height: 210px; border: 2px dashed rgba(99, 102, 241, 0.6); border-radius: 50%; pointer-events: none; z-index: 5; transition: 0.3s; -webkit-transition: 0.3s;}
     .face-guide-circle.active { border-color: #10B981; border-style: solid; border-width: 3px; box-shadow: 0 0 35px rgba(16, 185, 129, 0.5); transform: scale(1.02); -webkit-transform: scale(1.02);}
     
-    .icon-btn { position: absolute; top: 16px; right: 16px; width: 38px; height: 38px; background: transparent; color: #FFFFFF; border: none; outline: none; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 30; transition: transform 0.3s ease; -webkit-transition: -webkit-transform 0.3s ease;}
+    /* ĐÃ THU NHỎ ICON */
+    .icon-btn { position: absolute; top: 14px; right: 14px; width: 32px; height: 32px; background: transparent; color: #FFFFFF; border: none; outline: none; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 30; transition: transform 0.3s ease; -webkit-transition: -webkit-transform 0.3s ease;}
     .icon-btn:hover { transform: scale(1.15) rotate(180deg); -webkit-transform: scale(1.15) rotate(180deg); }
-    .icon-btn svg { width: 22px; height: 22px; stroke: currentColor; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.8)); -webkit-filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.8));}
+    .icon-btn svg { width: 18px; height: 18px; stroke: currentColor; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.8)); -webkit-filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.8));}
     
     .progress-container { width: 100%; background: rgba(255, 255, 255, 0.08); height: 6px; border-radius: 4px; overflow: hidden; margin-top: 5px; }
     .progress-bar { width: 0%; height: 100%; background: linear-gradient(90deg, #6366F1, #10B981); transition: 0.05s; }
@@ -62,7 +63,6 @@
   </style>
 </head>
 <body>
-
   <div class="app-card" id="app-card">
     <div class="app-header">
       <h2>Đăng Ký Khuôn Mặt</h2>
@@ -133,22 +133,19 @@
     const video = document.getElementById('video');
     const statusBox = document.getElementById('status-box'), progressBar = document.getElementById('progress-bar'), guideCircle = document.getElementById('guide-circle');
     
-    function isInAppBrowser() {
-      const ua = navigator.userAgent || navigator.vendor || window.opera;
-      return (ua.indexOf("FBAN") > -1) || (ua.indexOf("FBAV") > -1) || (ua.indexOf("Zalo") > -1) || (ua.indexOf("Instagram") > -1) || (ua.indexOf("TikTok") > -1);
-    }
-
     function stopCamera() {
       if (currentStream) { currentStream.getTracks().forEach(t => t.stop()); currentStream = null; }
       if (video) video.srcObject = null;
     }
 
     document.addEventListener("visibilitychange", () => {
-      if (document.hidden) {
-        stopCamera(); isScanningActive = false;
-      } else {
-        if (document.getElementById('section-scan').style.display !== 'none' && isDataReady && !isInAppBrowser()) {
-          startCamera(currentFacingMode);
+      if (document.getElementById('app-card').style.display === 'flex') {
+        if (document.hidden) {
+          stopCamera(); isScanningActive = false;
+        } else {
+          if (document.getElementById('section-scan').style.display !== 'none' && isDataReady) {
+            startCamera(currentFacingMode);
+          }
         }
       }
     });
@@ -156,12 +153,23 @@
     window.addEventListener("beforeunload", stopCamera);
 
     window.onload = () => {
-      if (isInAppBrowser()) {
-        statusBox.innerText = "⚠ Bị chặn Camera. Ấn dấu (...) góc phải mở bằng Safari/Chrome.";
+      const ua = navigator.userAgent || navigator.vendor || window.opera;
+      const inApp = (ua.indexOf("FBAN") > -1) || (ua.indexOf("FBAV") > -1) || (ua.indexOf("Zalo") > -1) || (ua.indexOf("Instagram") > -1) || (ua.indexOf("TikTok") > -1);
+      
+      if (inApp) {
+        const url = window.location.href;
+        const noProtocolUrl = url.replace(/^https?:\/\//, '');
+
+        if (/android/i.test(ua)) {
+          window.location.href = `intent://${noProtocolUrl}#Intent;scheme=https;package=com.android.chrome;end`;
+        } else if (/iphone|ipad|ipod/i.test(ua)) {
+          window.location.href = `googlechrome://${noProtocolUrl}`;
+        }
+        
+        statusBox.innerText = "⚠ Ấn dấu ( ... ) góc phải, chọn Mở bằng Safari / Chrome";
         statusBox.style.color = "#fbbf24";
         document.getElementById('header-subtitle').innerText = "Trình duyệt bị giới hạn";
-        alert("⚠️ Trình duyệt của Messenger/Zalo không cho phép dùng Camera. Vui lòng bấm dấu 3 chấm góc phải trên cùng và chọn mở bằng trình duyệt bên ngoài.");
-        return;
+        return; 
       }
 
       startCamera(currentFacingMode);
@@ -203,12 +211,13 @@
       stopCamera();
       isCameraReady = false;
       try {
+        const getUserMedia = navigator.mediaDevices.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
         currentStream = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 720 }, height: { ideal: 720 }, facingMode: facingMode } });
         video.srcObject = currentStream;
         video.className = facingMode === "user" ? "front-camera" : "back-camera";
         video.onloadedmetadata = () => { video.play(); isCameraReady = true; checkAndStartApp(); };
       } catch(err) {
-        statusBox.innerText = "⚠ Vui lòng cấp quyền Camera!";
+        statusBox.innerText = "⚠ Bị từ chối Camera. Vui lòng cấp quyền!";
         statusBox.style.color = "#f87171";
       }
     }
