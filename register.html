@@ -3,22 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Face ID - Register Fast</title>
+  <title>Face ID - Đăng ký</title>
   <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
     body, html { width: 100%; height: 100%; background: radial-gradient(circle at 50% 20%, #1e1b4b 0%, #0f172a 100%); display: flex; justify-content: center; align-items: center; padding: 16px; color: #f8fafc; overflow: hidden; }
     
-    #permission-screen { position: absolute; inset: 0; z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px); padding: 20px; text-align: center; }
-    .perm-icon { font-size: 4rem; margin-bottom: 20px; animation: bounce 2s infinite ease-in-out; }
-    @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
-    .perm-title { font-size: 1.5rem; font-weight: 800; color: #ffffff; margin-bottom: 10px; }
-    .perm-desc { font-size: 0.95rem; color: #94a3b8; max-width: 300px; margin-bottom: 30px; line-height: 1.5; }
-    .perm-btn { background: linear-gradient(135deg, #6366F1 0%, #4f46e5 100%); color: white; border: none; padding: 14px 28px; border-radius: 20px; font-weight: 700; font-size: 1rem; cursor: pointer; box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4); transition: transform 0.2s, box-shadow 0.2s; display: flex; align-items: center; gap: 8px; }
-    .perm-btn:hover { transform: translateY(-2px); box-shadow: 0 15px 30px rgba(99, 102, 241, 0.6); }
-
-    .app-card { display: none; background: rgba(30, 41, 59, 0.65); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); padding: 28px; border-radius: 36px; box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.08); width: 100%; max-width: 420px; flex-direction: column; gap: 22px; animation: fadeIn 0.4s ease-out;}
+    .app-card { display: flex; background: rgba(30, 41, 59, 0.65); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); padding: 28px; border-radius: 36px; box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.08); width: 100%; max-width: 420px; flex-direction: column; gap: 22px; animation: fadeIn 0.4s ease-out;}
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     
     .app-header h2 { font-size: 1.4rem; font-weight: 800; color: #ffffff; text-align: center; }
@@ -71,17 +63,6 @@
 </head>
 <body>
 
-  <!-- MÀN HÌNH XIN QUYỀN CAMERA -->
-  <div id="permission-screen">
-    <div class="perm-icon">📸</div>
-    <div class="perm-title">Face ID Register</div>
-    <div class="perm-desc">Hệ thống cần quyền truy cập Camera để tạo dữ liệu khuôn mặt 3D bảo mật cho bạn.</div>
-    <button class="perm-btn" onclick="requestCameraAccess()">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
-      Cho phép Camera
-    </button>
-  </div>
-
   <div class="app-card" id="app-card">
     <div class="app-header">
       <h2>Đăng Ký Khuôn Mặt</h2>
@@ -101,6 +82,7 @@
       </div>
 
       <div class="progress-container"><div id="progress-bar" class="progress-bar"></div></div>
+      <!-- Trạng thái lúc đầu là đang khởi động ngầm -->
       <div id="status-box" class="status-box">Đang khởi động hệ thống...</div>
 
       <a href="index.html" class="back-link" style="margin-top: 5px;">Quay về Check-in</a>
@@ -158,37 +140,23 @@
     }
 
     document.addEventListener("visibilitychange", () => {
-      if (document.getElementById('app-card').style.display === 'flex') {
-        if (document.hidden) {
-          stopCamera(); isScanningActive = false;
-        } else {
-          if (document.getElementById('section-scan').style.display !== 'none' && isDataReady) {
-            startCamera(currentFacingMode);
-          }
+      if (document.hidden) {
+        stopCamera(); isScanningActive = false;
+      } else {
+        if (document.getElementById('section-scan').style.display !== 'none' && isDataReady) {
+          startCamera(currentFacingMode);
         }
       }
     });
     window.addEventListener("pagehide", stopCamera);
     window.addEventListener("beforeunload", stopCamera);
 
-    async function requestCameraAccess() {
-      try {
-        const testStream = await navigator.mediaDevices.getUserMedia({ video: true });
-        testStream.getTracks().forEach(t => t.stop());
-        
-        document.getElementById('permission-screen').style.display = 'none';
-        document.getElementById('app-card').style.display = 'flex';
-        initSystem();
-      } catch (err) {
-        alert("Bạn đã từ chối quyền Camera. Vui lòng tải lại trang và cho phép để sử dụng hệ thống.");
-      }
-    }
-
-    async function initSystem() {
+    // GỌI CAMERA NGẦM NGAY KHI MỞ TRANG
+    window.onload = () => {
       startCamera(currentFacingMode);
       loadModels();
-      fetchDatabaseAsync();
-    }
+      fetchDatabaseAsync(); 
+    };
 
     async function loadModels() {
       try {
@@ -224,12 +192,13 @@
       stopCamera();
       isCameraReady = false;
       try {
+        const getUserMedia = navigator.mediaDevices.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
         currentStream = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 720 }, height: { ideal: 720 }, facingMode: facingMode } });
         video.srcObject = currentStream;
         video.className = facingMode === "user" ? "front-camera" : "back-camera";
         video.onloadedmetadata = () => { video.play(); isCameraReady = true; checkAndStartApp(); };
       } catch(err) {
-        statusBox.innerText = "⚠ Bị từ chối Camera!";
+        statusBox.innerText = "⚠ Bị từ chối Camera. Vui lòng cấp quyền!";
         statusBox.style.color = "#f87171";
       }
     }
