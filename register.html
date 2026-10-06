@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Face ID - Đăng ký</title>
+  <title>Face ID - Register Fast</title>
   <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -21,10 +21,10 @@
     #video { width: 100%; height: 100%; object-fit: cover; filter: contrast(1.05); -webkit-filter: contrast(1.05); transition: 0.3s; }
     #video.front-camera { transform: scaleX(-1); -webkit-transform: scaleX(-1);}
     
-    .face-guide-circle { position: absolute; width: 210px; height: 210px; border: 2px dashed rgba(99, 102, 241, 0.6); border-radius: 50%; pointer-events: none; z-index: 5; transition: 0.3s; -webkit-transition: 0.3s;}
+    /* ĐÃ MỞ RỘNG VÒNG TRÒN LÊN 280px */
+    .face-guide-circle { position: absolute; width: 280px; height: 280px; border: 2px dashed rgba(99, 102, 241, 0.6); border-radius: 50%; pointer-events: none; z-index: 5; transition: 0.3s; -webkit-transition: 0.3s;}
     .face-guide-circle.active { border-color: #10B981; border-style: solid; border-width: 3px; box-shadow: 0 0 35px rgba(16, 185, 129, 0.5); transform: scale(1.02); -webkit-transform: scale(1.02);}
     
-    /* ĐÃ THU NHỎ ICON */
     .icon-btn { position: absolute; top: 14px; right: 14px; width: 32px; height: 32px; background: transparent; color: #FFFFFF; border: none; outline: none; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 30; transition: transform 0.3s ease; -webkit-transition: -webkit-transform 0.3s ease;}
     .icon-btn:hover { transform: scale(1.15) rotate(180deg); -webkit-transform: scale(1.15) rotate(180deg); }
     .icon-btn svg { width: 18px; height: 18px; stroke: currentColor; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.8)); -webkit-filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.8));}
@@ -63,6 +63,7 @@
   </style>
 </head>
 <body>
+
   <div class="app-card" id="app-card">
     <div class="app-header">
       <h2>Đăng Ký Khuôn Mặt</h2>
@@ -251,7 +252,8 @@
             if (detection) {
               const box = detection.detection.box, vCenter = { x: video.videoWidth / 2, y: video.videoHeight / 2 }, fCenter = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
               
-              if (Math.abs(fCenter.x - vCenter.x) < 180 && Math.abs(fCenter.y - vCenter.y) < 180) {
+              // Khoảng cách quét nới rộng khớp với vòng tròn 280px
+              if (Math.abs(fCenter.x - vCenter.x) < 220 && Math.abs(fCenter.y - vCenter.y) < 220) {
                 const landmarks = detection.landmarks;
                 const getCenter = (pts) => {
                   let sumX = 0, sumY = 0; pts.forEach(pt => { sumX += pt.x; sumY += pt.y; });
