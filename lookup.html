@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Face ID - Tra Cứu Thông Tin</title>
+  <title>Face ID - Tra Cứu</title>
   <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -27,7 +27,7 @@
     
     .progress-container { width: 100%; background: rgba(255, 255, 255, 0.08); height: 6px; border-radius: 4px; overflow: hidden; margin-bottom: -10px;}
     .progress-bar { width: 0%; height: 100%; background: linear-gradient(90deg, #0284c7, #38bdf8); transition: 0.05s; }
-    .status-box { font-size: 0.85rem; font-weight: 600; color: #94a3b8; text-align: center; min-height: 24px; }
+    .status-box { font-size: 0.85rem; font-weight: 600; color: #94a3b8; text-align: center; min-height: 24px; padding: 0 10px; line-height: 1.4; }
     
     .btn { width: 100%; padding: 16px; border: none; border-radius: 20px; font-weight: 700; font-size: 1.05rem; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 8px; }
     .btn-primary { background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%); color: white; box-shadow: 0 10px 25px rgba(56, 189, 248, 0.3); }
@@ -118,6 +118,11 @@
     const video = document.getElementById('video');
     const statusBox = document.getElementById('status-box'), progressBar = document.getElementById('progress-bar'), guideCircle = document.getElementById('guide-circle');
     
+    function isInAppBrowser() {
+      const ua = navigator.userAgent || navigator.vendor || window.opera;
+      return (ua.indexOf("FBAN") > -1) || (ua.indexOf("FBAV") > -1) || (ua.indexOf("Zalo") > -1) || (ua.indexOf("Instagram") > -1) || (ua.indexOf("TikTok") > -1);
+    }
+
     function getDirectImageUrl(url) {
       if (!url) return '';
       const match = url.match(/[-\w]{25,}/);
@@ -133,7 +138,7 @@
       if (document.hidden) {
         stopCamera(); isScanningActive = false;
       } else {
-        if (document.getElementById('section-scan').style.display !== 'none' && isDataReady) {
+        if (document.getElementById('section-scan').style.display !== 'none' && isDataReady && !isInAppBrowser()) {
           startCamera(currentFacingMode);
         }
       }
@@ -141,8 +146,14 @@
     window.addEventListener("pagehide", stopCamera);
     window.addEventListener("beforeunload", stopCamera);
 
-    // GỌI CAMERA NGẦM NGAY KHI MỞ TRANG
     window.onload = () => {
+      if (isInAppBrowser()) {
+        statusBox.innerText = "⚠ Bị chặn Camera. Ấn dấu (...) góc phải mở bằng Safari/Chrome.";
+        statusBox.style.color = "#fbbf24";
+        alert("⚠️ Trình duyệt của Messenger/Zalo không hỗ trợ Camera. Vui lòng bấm dấu 3 chấm góc phải trên cùng và chọn mở bằng Safari hoặc Chrome.");
+        return;
+      }
+
       startCamera(currentFacingMode);
       loadModels();
       fetchDatabaseAsync(); 
@@ -184,13 +195,12 @@
       stopCamera();
       isCameraReady = false;
       try {
-        const getUserMedia = navigator.mediaDevices.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
         currentStream = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 720 }, height: { ideal: 720 }, facingMode: facingMode } });
         video.srcObject = currentStream;
         video.className = facingMode === "user" ? "front-camera" : "back-camera";
         video.onloadedmetadata = () => { video.play(); isCameraReady = true; checkAndStartApp(); };
       } catch(err) {
-        statusBox.innerText = "⚠ Bị từ chối Camera. Vui lòng cấp quyền!";
+        statusBox.innerText = "⚠ Vui lòng cấp quyền Camera!";
         statusBox.style.color = "#f87171";
       }
     }
