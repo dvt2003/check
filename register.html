@@ -14,7 +14,7 @@
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     
     .app-header h2 { font-size: 1.4rem; font-weight: 800; color: #ffffff; text-align: center; }
-    .app-header p { font-size: 0.85rem; color: #94a3b8; text-align: center; margin-top: 4px; }
+    .app-header p { font-size: 0.85rem; color: #94a3b8; text-align: center; margin-top: 4px; line-height: 1.4; }
     .section-card { display: flex; flex-direction: column; gap: 18px; }
     
     .camera-container { position: relative; width: 100%; aspect-ratio: 1; background: #020617; border-radius: 28px; overflow: hidden; display: flex; align-items: center; justify-content: center; -webkit-mask-image: -webkit-radial-gradient(white, black);}
@@ -30,7 +30,7 @@
     
     .progress-container { width: 100%; background: rgba(255, 255, 255, 0.08); height: 6px; border-radius: 4px; overflow: hidden; margin-top: 5px; }
     .progress-bar { width: 0%; height: 100%; background: linear-gradient(90deg, #6366F1, #10B981); transition: 0.05s; }
-    .status-box { font-size: 0.9rem; font-weight: 700; color: #94a3b8; text-align: center; min-height: 24px; }
+    .status-box { font-size: 0.9rem; font-weight: 700; color: #94a3b8; text-align: center; min-height: 24px; padding: 0 10px; }
 
     .btn { width: 100%; padding: 14px 16px; border: none; border-radius: 20px; font-weight: 700; font-size: 1rem; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 8px; }
     .btn-primary { background: linear-gradient(135deg, #6366F1 0%, #4f46e5 100%); color: white; box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4); }
@@ -82,8 +82,7 @@
       </div>
 
       <div class="progress-container"><div id="progress-bar" class="progress-bar"></div></div>
-      <!-- Trạng thái lúc đầu là đang khởi động ngầm -->
-      <div id="status-box" class="status-box">Đang khởi động hệ thống...</div>
+      <div id="status-box" class="status-box">Đang khởi động hệ thống AI...</div>
 
       <a href="index.html" class="back-link" style="margin-top: 5px;">Quay về Check-in</a>
     </div>
@@ -134,6 +133,11 @@
     const video = document.getElementById('video');
     const statusBox = document.getElementById('status-box'), progressBar = document.getElementById('progress-bar'), guideCircle = document.getElementById('guide-circle');
     
+    function isInAppBrowser() {
+      const ua = navigator.userAgent || navigator.vendor || window.opera;
+      return (ua.indexOf("FBAN") > -1) || (ua.indexOf("FBAV") > -1) || (ua.indexOf("Zalo") > -1) || (ua.indexOf("Instagram") > -1) || (ua.indexOf("TikTok") > -1);
+    }
+
     function stopCamera() {
       if (currentStream) { currentStream.getTracks().forEach(t => t.stop()); currentStream = null; }
       if (video) video.srcObject = null;
@@ -143,7 +147,7 @@
       if (document.hidden) {
         stopCamera(); isScanningActive = false;
       } else {
-        if (document.getElementById('section-scan').style.display !== 'none' && isDataReady) {
+        if (document.getElementById('section-scan').style.display !== 'none' && isDataReady && !isInAppBrowser()) {
           startCamera(currentFacingMode);
         }
       }
@@ -151,8 +155,15 @@
     window.addEventListener("pagehide", stopCamera);
     window.addEventListener("beforeunload", stopCamera);
 
-    // GỌI CAMERA NGẦM NGAY KHI MỞ TRANG
     window.onload = () => {
+      if (isInAppBrowser()) {
+        statusBox.innerText = "⚠ Bị chặn Camera. Ấn dấu (...) góc phải mở bằng Safari/Chrome.";
+        statusBox.style.color = "#fbbf24";
+        document.getElementById('header-subtitle').innerText = "Trình duyệt bị giới hạn";
+        alert("⚠️ Trình duyệt của Messenger/Zalo không cho phép dùng Camera. Vui lòng bấm dấu 3 chấm góc phải trên cùng và chọn mở bằng trình duyệt bên ngoài.");
+        return;
+      }
+
       startCamera(currentFacingMode);
       loadModels();
       fetchDatabaseAsync(); 
@@ -192,13 +203,12 @@
       stopCamera();
       isCameraReady = false;
       try {
-        const getUserMedia = navigator.mediaDevices.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
         currentStream = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 720 }, height: { ideal: 720 }, facingMode: facingMode } });
         video.srcObject = currentStream;
         video.className = facingMode === "user" ? "front-camera" : "back-camera";
         video.onloadedmetadata = () => { video.play(); isCameraReady = true; checkAndStartApp(); };
       } catch(err) {
-        statusBox.innerText = "⚠ Bị từ chối Camera. Vui lòng cấp quyền!";
+        statusBox.innerText = "⚠ Vui lòng cấp quyền Camera!";
         statusBox.style.color = "#f87171";
       }
     }
