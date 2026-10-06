@@ -10,7 +10,15 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
     body, html { width: 100%; height: 100%; background: radial-gradient(circle at 50% 20%, #0f172a 0%, #020617 100%); display: flex; justify-content: center; align-items: center; padding: 16px; color: #f8fafc; overflow: hidden; }
     
-    .app-card { display: flex; background: rgba(30, 41, 59, 0.65); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); padding: 28px; border-radius: 36px; box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.05); width: 100%; max-width: 420px; flex-direction: column; gap: 22px; animation: fadeIn 0.4s ease-out;}
+    #permission-screen { position: absolute; inset: 0; z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(2, 6, 23, 0.95); backdrop-filter: blur(10px); padding: 20px; text-align: center; }
+    .perm-icon { font-size: 4rem; margin-bottom: 20px; animation: bounce 2s infinite ease-in-out; }
+    @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+    .perm-title { font-size: 1.5rem; font-weight: 800; color: #38bdf8; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;}
+    .perm-desc { font-size: 0.95rem; color: #94a3b8; max-width: 300px; margin-bottom: 30px; line-height: 1.5; }
+    .perm-btn { background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%); color: white; border: none; padding: 14px 28px; border-radius: 20px; font-weight: 700; font-size: 1rem; cursor: pointer; box-shadow: 0 10px 25px rgba(56, 189, 248, 0.3); transition: transform 0.2s, box-shadow 0.2s; display: flex; align-items: center; gap: 8px; }
+    .perm-btn:hover { transform: translateY(-2px); box-shadow: 0 15px 30px rgba(56, 189, 248, 0.5); }
+
+    .app-card { display: none; background: rgba(30, 41, 59, 0.65); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); padding: 28px; border-radius: 36px; box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.05); width: 100%; max-width: 420px; flex-direction: column; gap: 22px; animation: fadeIn 0.4s ease-out;}
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     
     .app-header h2 { font-size: 1.4rem; font-weight: 800; color: #38bdf8; text-align: center; text-transform: uppercase; letter-spacing: 1px;}
@@ -18,7 +26,6 @@
     .camera-container { position: relative; width: 100%; aspect-ratio: 1; background: #000; border-radius: 28px; overflow: hidden; display: flex; align-items: center; justify-content: center; border: 2px solid #1e293b; -webkit-mask-image: -webkit-radial-gradient(white, black);}
     #video { width: 100%; height: 100%; object-fit: cover; filter: contrast(1.05); -webkit-filter: contrast(1.05); transition: 0.3s; }
     #video.front-camera { transform: scaleX(-1); -webkit-transform: scaleX(-1);}
-    
     .face-guide-circle { position: absolute; width: 210px; height: 210px; border: 2px dashed rgba(56, 189, 248, 0.4); border-radius: 50%; pointer-events: none; z-index: 5; transition: 0.3s; -webkit-transition: 0.3s;}
     .face-guide-circle.active { border-color: #38bdf8; border-style: solid; border-width: 3px; box-shadow: 0 0 35px rgba(56, 189, 248, 0.5); transform: scale(1.05); -webkit-transform: scale(1.05);}
     
@@ -45,7 +52,6 @@
     .info-group label { font-size: 0.75rem; color: #64748b; text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px; }
     .info-group .value { font-size: 1.2rem; color: #ffffff; font-weight: 700; }
     .info-group .value.highlight { color: #38bdf8; font-size: 1.4rem; letter-spacing: 1px; }
-    
     .copy-btn { background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); color: #38bdf8; padding: 6px 12px; border-radius: 10px; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 6px; }
     .copy-btn:hover { background: rgba(56, 189, 248, 0.3); }
     .copy-btn.copied { background: #38bdf8; color: #020617; border-color: #38bdf8; }
@@ -53,6 +59,18 @@
   </style>
 </head>
 <body>
+
+  <!-- MÀN HÌNH XIN QUYỀN CAMERA -->
+  <div id="permission-screen">
+    <div class="perm-icon">👁️</div>
+    <div class="perm-title">Tra Cứu Dữ Liệu</div>
+    <div class="perm-desc">Hệ thống yêu cầu quyền truy cập Camera để có thể quét và tra cứu hồ sơ.</div>
+    <button class="perm-btn" onclick="requestCameraAccess()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+      Khởi động Camera
+    </button>
+  </div>
+
   <div class="app-card" id="app-card">
     <div class="app-header"><h2>Tra Cứu Dữ Liệu</h2></div>
     
@@ -112,7 +130,8 @@
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx3nnZ45NKjve47jyhHHYYUTYxYExbxcoBGbn5SzfBHKBQtvtQ8HQSoyLopq7S4fJb9/exec"; 
     
     let currentStream = null, currentFacingMode = "user", existingFaceMatcher = null;
-    let isDataReady = false, isScanningActive = false, scanTimer = 0;
+    let isDataReady = false, isCameraReady = false, isModelsLoaded = false;
+    let isScanningActive = false, scanTimer = 0;
     let employeeData = {}; 
 
     const video = document.getElementById('video');
@@ -143,19 +162,38 @@
     window.addEventListener("pagehide", stopCamera);
     window.addEventListener("beforeunload", stopCamera);
 
-    window.onload = async () => {
+    async function requestCameraAccess() {
+      try {
+        const testStream = await navigator.mediaDevices.getUserMedia({ video: true });
+        testStream.getTracks().forEach(t => t.stop());
+        
+        document.getElementById('permission-screen').style.display = 'none';
+        document.getElementById('app-card').style.display = 'flex';
+        initSystem();
+      } catch (err) {
+        alert("Bạn đã từ chối quyền Camera. Vui lòng tải lại trang và cho phép để sử dụng hệ thống.");
+      }
+    }
+
+    async function initSystem() {
       startCamera(currentFacingMode);
-      await faceapi.nets.tinyFaceDetector.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models');
-      await faceapi.nets.faceLandmark68Net.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models');
-      await faceapi.nets.faceRecognitionNet.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models');
-      fetchDatabaseAsync(); 
-    };
+      loadModels();
+      fetchDatabaseAsync();
+    }
+
+    async function loadModels() {
+      try {
+        await faceapi.nets.tinyFaceDetector.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models');
+        await faceapi.nets.faceLandmark68Net.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models');
+        await faceapi.nets.faceRecognitionNet.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models');
+        isModelsLoaded = true; checkAndStartApp();
+      } catch(e) { statusBox.innerText = "Lỗi tải AI!"; }
+    }
 
     async function fetchDatabaseAsync() {
       try {
         const response = await fetch(SCRIPT_URL);
         const result = await response.json();
-        
         if (result.status === "success" && result.data.length > 0) {
           const labeledDescriptors = [];
           for (let i = 0; i < result.data.length; i++) {
@@ -170,33 +208,35 @@
           if (labeledDescriptors.length > 0) existingFaceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.40);
         }
       } catch(e) {}
-      
-      isDataReady = true; startScanningProcess();
+      isDataReady = true; checkAndStartApp();
     }
 
     async function startCamera(facingMode) {
       stopCamera();
+      isCameraReady = false;
       try {
         currentStream = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 720 }, height: { ideal: 720 }, facingMode: facingMode } });
         video.srcObject = currentStream;
         video.className = facingMode === "user" ? "front-camera" : "back-camera";
-        video.onloadedmetadata = () => { video.play(); startScanningProcess(); };
+        video.onloadedmetadata = () => { video.play(); isCameraReady = true; checkAndStartApp(); };
       } catch(err) {
-        statusBox.innerText = "⚠ Bị từ chối Camera. Vui lòng cấp quyền!";
+        statusBox.innerText = "⚠ Bị từ chối Camera!";
         statusBox.style.color = "#f87171";
+      }
+    }
+
+    function checkAndStartApp() {
+      if (isModelsLoaded && isDataReady && isCameraReady && !isScanningActive) {
+        scanTimer = 0; isScanningActive = true;
+        statusBox.innerText = "Đưa khuôn mặt vào camera để tra cứu";
+        statusBox.style.color = "#38bdf8";
+        runLookupLoop();
       }
     }
 
     function switchCamera() {
       currentFacingMode = (currentFacingMode === "user") ? "environment" : "user";
       startCamera(currentFacingMode);
-    }
-
-    function startScanningProcess() {
-      if (!isDataReady || video.readyState < 2) return;
-      statusBox.innerText = "Đưa khuôn mặt vào camera để tra cứu";
-      statusBox.style.color = "#38bdf8";
-      scanTimer = 0; isScanningActive = true; runLookupLoop();
     }
 
     async function runLookupLoop() {
