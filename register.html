@@ -18,7 +18,6 @@
     
     .section-card { display: flex; flex-direction: column; gap: 18px; }
     
-    /* Giao diện Camera */
     .camera-container { position: relative; width: 100%; aspect-ratio: 1; background: #020617; border-radius: 28px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
     #video { width: 100%; height: 100%; object-fit: cover; filter: contrast(1.05); transition: 0.3s; }
     #video.front-camera { transform: scaleX(-1); }
@@ -26,7 +25,6 @@
     .face-guide-circle { position: absolute; width: 210px; height: 210px; border: 2px dashed rgba(99, 102, 241, 0.6); border-radius: 50%; pointer-events: none; z-index: 5; transition: 0.3s; }
     .face-guide-circle.active { border-color: #10B981; border-style: solid; border-width: 3px; box-shadow: 0 0 35px rgba(16, 185, 129, 0.5); transform: scale(1.02); }
     
-    /* Nút Lật Camera Trong Suốt */
     .icon-btn { position: absolute; top: 16px; right: 16px; width: 38px; height: 38px; background: transparent; color: #FFFFFF; border: none; outline: none; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 30; transition: transform 0.3s ease; }
     .icon-btn:hover { transform: scale(1.15) rotate(180deg); }
     .icon-btn svg { width: 22px; height: 22px; stroke: currentColor; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.8)); }
@@ -35,7 +33,6 @@
     .progress-bar { width: 0%; height: 100%; background: linear-gradient(90deg, #6366F1, #10B981); transition: 0.05s; }
     .status-box { font-size: 0.9rem; font-weight: 700; color: #94a3b8; text-align: center; min-height: 24px; }
 
-    /* Nút bấm chung */
     .btn { width: 100%; padding: 14px 16px; border: none; border-radius: 20px; font-weight: 700; font-size: 1rem; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 8px; }
     .btn-primary { background: linear-gradient(135deg, #6366F1 0%, #4f46e5 100%); color: white; box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4); }
     .btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 15px 30px rgba(99, 102, 241, 0.6); }
@@ -44,14 +41,12 @@
     .btn-secondary:hover { background: rgba(255, 255, 255, 0.15); color: #ffffff; }
     .back-link { text-align: center; display: block; font-size: 0.85rem; font-weight: 600; color: #818cf8; text-decoration: none; }
 
-    /* MÀN HÌNH KIỂM TRA ẢNH CHỤP (Confirm) */
     #section-confirm { display: none; text-align: center; }
     .preview-container { width: 100%; aspect-ratio: 1; border-radius: 28px; overflow: hidden; border: 3px solid #6366F1; box-shadow: 0 10px 30px rgba(99, 102, 241, 0.2); background: #020617; }
     .preview-container img { width: 100%; height: 100%; object-fit: cover; }
     .flex-row { display: flex; gap: 12px; margin-top: 10px; width: 100%; }
     .flex-row .btn { flex: 1; }
 
-    /* MÀN HÌNH THÀNH CÔNG (Success) */
     #section-success { text-align: center; display: none; }
     .success-avatar { width: 120px; height: 120px; margin: 0 auto 10px; border-radius: 50%; padding: 4px; background: linear-gradient(135deg, #10B981, #34D399); box-shadow: 0 0 30px rgba(16, 185, 129, 0.4); }
     .success-avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 3px solid #1e293b; }
@@ -76,7 +71,7 @@
       <p id="header-subtitle">Hệ thống sẽ tự động chụp ảnh</p>
     </div>
     
-    <!-- 1. MÀN HÌNH QUÉT CAMERA -->
+    <!-- MÀN HÌNH QUÉT CAMERA -->
     <div id="section-scan" class="section-card">
       <div class="camera-container" id="container">
         <button class="icon-btn" onclick="switchCamera()" title="Đổi camera">
@@ -95,26 +90,21 @@
       <a href="index.html" class="back-link" style="margin-top: 5px;">Quay về Check-in</a>
     </div>
 
-    <!-- 2. MÀN HÌNH XÁC NHẬN ẢNH VỪA CHỤP -->
+    <!-- MÀN HÌNH XÁC NHẬN ẢNH VỪA CHỤP -->
     <div id="section-confirm" class="section-card">
-      <div class="preview-container">
-        <img id="preview-img" src="" alt="Ảnh vừa chụp">
-      </div>
-      
+      <div class="preview-container"><img id="preview-img" src="" alt="Ảnh vừa chụp"></div>
       <h3 style="color: #ffffff; font-weight: 800; font-size: 1.15rem; margin-bottom: -5px;">Ảnh này đã chuẩn chưa?</h3>
       <p style="color: #94a3b8; font-size: 0.85rem;">Hãy đảm bảo ảnh chụp thẳng và không bị mờ.</p>
-
       <div class="flex-row">
         <button class="btn btn-secondary" onclick="retakePhoto()">🔄 Chụp lại</button>
         <button id="btn-save" class="btn btn-primary" onclick="confirmAndSave()">✅ Lưu ngay</button>
       </div>
     </div>
 
-    <!-- 3. MÀN HÌNH ĐĂNG KÝ THÀNH CÔNG -->
+    <!-- MÀN HÌNH ĐĂNG KÝ THÀNH CÔNG -->
     <div id="section-success" class="section-card">
       <div class="success-avatar"><img id="success-img" src="" alt="Avatar"></div>
       <h3 style="color: #34D399; font-weight: 800; font-size: 1.2rem;">Đăng Ký Thành Công!</h3>
-      
       <div class="info-group">
         <label>Mã ID Cấp Mới</label>
         <div class="flex-row-between">
@@ -124,12 +114,10 @@
           </button>
         </div>
       </div>
-      
       <div class="info-group">
         <label>Thời Gian Đăng Ký</label>
         <div id="success-time" class="value">---</div>
       </div>
-
       <div id="sync-status" class="sync-status">🔄 Đang đồng bộ với Máy chủ...</div>
       <button class="btn btn-secondary" style="margin-top: 10px;" onclick="window.location.reload()">Đăng ký người tiếp theo</button>
       <a href="index.html" class="back-link">Quay về Check-in</a>
@@ -143,7 +131,6 @@
     let isDataReady = false, isScanningActive = false, scanTimer = 0, collectedDescriptors = [];
     let listExistingIDs = []; 
 
-    // Biến tạm để lưu dữ liệu khuôn mặt và ảnh chờ xác nhận
     let tempDescriptor = [];
     let tempImageBase64 = "";
 
@@ -222,7 +209,7 @@
 
     async function runAutoDetectionLoop() {
       const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.5 });
-      const targetTimeMs = 500; // Giữ mặt chuẩn trong 0.5s để chụp
+      const targetTimeMs = 500; 
       const frameIntervalMs = 25; 
       let lastTime = Date.now();
 
@@ -233,7 +220,6 @@
         if (now - lastTime >= frameIntervalMs) {
           lastTime = now;
           try {
-            // Lấy cả Face Descriptor và Landmarks (Các điểm neo trên khuôn mặt)
             const detection = await faceapi.detectSingleFace(video, options).withFaceLandmarks().withFaceDescriptor();
             
             if (detection) {
@@ -241,13 +227,12 @@
               const vCenter = { x: video.videoWidth / 2, y: video.videoHeight / 2 };
               const fCenter = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
               
-              // 1. KIỂM TRA KHUÔN MẶT CÓ NẰM GIỮA KHUNG TRÒN KHÔNG
+              // 1. Kiểm tra vị trí giữa màn hình
               if (Math.abs(fCenter.x - vCenter.x) < 180 && Math.abs(fCenter.y - vCenter.y) < 180) {
                 
-                // 2. KIỂM TRA TƯ THẾ ĐẦU (PHẢI NHÌN THẲNG, KHÔNG NGHIÊNG)
+                // 2. PHÂN TÍCH TƯ THẾ ĐẦU 3D
                 const landmarks = detection.landmarks;
                 
-                // Hàm tính tâm điểm của mắt
                 const getCenter = (pts) => {
                   let sumX = 0, sumY = 0;
                   pts.forEach(pt => { sumX += pt.x; sumY += pt.y; });
@@ -257,28 +242,41 @@
                 const leCenter = getCenter(landmarks.getLeftEye());
                 const reCenter = getCenter(landmarks.getRightEye());
                 const noseTip = landmarks.getNose()[3]; // Đỉnh mũi
+                const chin = landmarks.getJawOutline()[8]; // Cằm
                 
-                // Tính góc nghiêng (Roll)
+                // Tính độ Nghiêng đầu (Roll)
                 const dx = reCenter.x - leCenter.x;
                 const dy = reCenter.y - leCenter.y;
                 const rollAngle = Math.abs(Math.atan2(dy, dx) * 180 / Math.PI);
-                // Nếu góc lệch quá 10 độ so với đường ngang
                 const isHeadTilted = rollAngle > 10 && rollAngle < 170; 
                 
-                // Tính độ quay trái/phải (Yaw) dựa trên đỉnh mũi so với tâm 2 mắt
+                // Tính độ Quay mặt (Yaw)
                 const eyeCenterX = (leCenter.x + reCenter.x) / 2;
+                const eyeCenterY = (leCenter.y + reCenter.y) / 2;
                 const eyeDist = Math.sqrt(dx*dx + dy*dy);
                 const yawOffset = Math.abs(noseTip.x - eyeCenterX) / eyeDist;
-                // Nếu mũi lệch quá 22% khỏi tâm
                 const isHeadTurned = yawOffset > 0.22; 
 
-                // Nếu nghiêng đầu hoặc quay đi chỗ khác -> Cảnh báo
+                // Tính độ Ngửa/Cúi mặt (Pitch)
+                const distEyeNose = noseTip.y - eyeCenterY;
+                const distNoseChin = chin.y - noseTip.y;
+                const pitchRatio = distEyeNose / distNoseChin;
+                
+                const isHeadUp = pitchRatio < 0.6;   // Ngửa đầu: Mũi bị dồn lên sát mắt
+                const isHeadDown = pitchRatio > 1.2; // Cúi đầu: Mũi bị dồn xuống cằm
+
+                // 3. XUẤT CẢNH BÁO
                 if (isHeadTilted) {
                   resetCountdown("⚠️ Vui lòng không nghiêng đầu");
                 } else if (isHeadTurned) {
-                  resetCountdown("⚠️ Vui lòng nhìn thẳng vào camera");
+                  resetCountdown("⚠️ Vui lòng nhìn thẳng, không quay mặt");
+                } else if (isHeadUp) {
+                  resetCountdown("⚠️ Vui lòng không ngửa đầu");
+                } else if (isHeadDown) {
+                  resetCountdown("⚠️ Vui lòng không cúi đầu");
                 } else {
-                  // Khuôn mặt hoàn toàn chuẩn -> Bắt đầu quét & chụp
+                  
+                  // Tư thế chuẩn chỉnh -> Tiến hành chụp
                   scanTimer += frameIntervalMs; 
                   collectedDescriptors.push(detection.descriptor);
                   
@@ -287,19 +285,14 @@
                   statusBox.innerText = "Giữ cố định... đang chụp";
                   statusBox.style.color = "#34d399"; 
                   
-                  // Đủ 0.5s thì khóa ảnh
                   if (scanTimer >= targetTimeMs) { 
                     isScanningActive = false; 
                     processCapturedPhoto(); 
                     return; 
                   }
                 }
-              } else { 
-                resetCountdown("⚠ Hãy đưa mặt vào giữa khung tròn"); 
-              }
-            } else { 
-              resetCountdown("🔍 Đang tìm khuôn mặt..."); 
-            }
+              } else { resetCountdown("⚠ Hãy đưa mặt vào giữa khung tròn"); }
+            } else { resetCountdown("🔍 Đang tìm khuôn mặt..."); }
           } catch (err) {}
         }
         if (isScanningActive) requestAnimationFrame(detectFrame);
@@ -308,7 +301,6 @@
       requestAnimationFrame(detectFrame);
     }
 
-    // Reset lại thanh tiến trình nếu người dùng di chuyển lỗi
     function resetCountdown(msg) {
       if (scanTimer > 0) { 
         scanTimer = 0; progressBar.style.width = '0%'; guideCircle.classList.remove('active'); 
@@ -318,19 +310,16 @@
       }
     }
 
-    // CHỤP XONG -> CHUYỂN SANG MÀN HÌNH XÁC NHẬN
     async function processCapturedPhoto() {
       video.pause(); 
       
       const canvas = document.createElement('canvas'); canvas.width = video.videoWidth; canvas.height = video.videoHeight;
       const ctx = canvas.getContext('2d');
-      // Lật ảnh cho đúng chiều camera trước khi xuất
       if (currentFacingMode === "user") { ctx.translate(canvas.width, 0); ctx.scale(-1, 1); }
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
       const avgDescriptor = getAverageDescriptor(collectedDescriptors);
       
-      // Chống trùng lặp (nếu trùng mặt cũ, bắt chụp lại ngay)
       if (existingFaceMatcher) {
         const matchResult = existingFaceMatcher.findBestMatch(new Float32Array(avgDescriptor));
         if (matchResult.label !== "unknown") {
@@ -342,14 +331,12 @@
       tempDescriptor = avgDescriptor;
       tempImageBase64 = canvas.toDataURL('image/jpeg', 0.85);
 
-      // Mở thẻ Xác Nhận
       document.getElementById('section-scan').style.display = 'none';
       document.getElementById('section-confirm').style.display = 'block';
       document.getElementById('preview-img').src = tempImageBase64;
       document.getElementById('header-subtitle').innerText = "Vui lòng kiểm tra lại ảnh";
     }
 
-    // NÚT "CHỤP LẠI"
     function retakePhoto() {
       document.getElementById('section-confirm').style.display = 'none';
       document.getElementById('section-scan').style.display = 'flex';
@@ -362,13 +349,11 @@
       runAutoDetectionLoop();
     }
 
-    // NÚT "XÁC NHẬN & LƯU"
     function confirmAndSave() {
       const btnSave = document.getElementById('btn-save');
       btnSave.disabled = true;
       btnSave.innerHTML = "⏳ Đang xử lý...";
 
-      // Sinh ID tự động
       const now = new Date();
       const yy = String(now.getFullYear()).slice(-2), mm = String(now.getMonth() + 1).padStart(2, '0'), dd = String(now.getDate()).padStart(2, '0');
       const datePrefix = yy + mm + dd; 
@@ -383,7 +368,6 @@
       document.getElementById('section-confirm').style.display = 'none';
       showSuccessScreen(newId, timeWeb, tempImageBase64);
 
-      // Đẩy dữ liệu lên Apps Script ngầm
       const payload = { id: newId, faceData: JSON.stringify(tempDescriptor), time: timeWeb, imageBase64: tempImageBase64 };
       fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) })
         .then(response => response.json())
