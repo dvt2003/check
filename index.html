@@ -18,10 +18,10 @@
     .spinner { width: 36px; height: 36px; border: 4px solid rgba(255, 255, 255, 0.2); border-top-color: #6366F1; border-radius: 50%; animation: spin 1s linear infinite; }
     @keyframes spin { 100% { transform: rotate(360deg); } }
     
-    /* Nút Lật Camera Trong Suốt */
-    .icon-btn { position: absolute; bottom: 18px; right: 18px; width: 44px; height: 44px; background: transparent; color: #FFFFFF; border: none; outline: none; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 30; transition: transform 0.3s ease; }
+    /* Nút Lật Camera - Chuyển lên góc trên, thu nhỏ */
+    .icon-btn { position: absolute; top: 16px; right: 16px; width: 38px; height: 38px; background: transparent; color: #FFFFFF; border: none; outline: none; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 30; transition: transform 0.3s ease; }
     .icon-btn:hover { transform: scale(1.15) rotate(180deg); }
-    .icon-btn svg { width: 26px; height: 26px; stroke: currentColor; filter: drop-shadow(0px 2px 6px rgba(0,0,0,0.8)); }
+    .icon-btn svg { width: 22px; height: 22px; stroke: currentColor; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.8)); }
     
     .info-box { background: #F8FAFC; border: 2px solid #E2E8F0; border-radius: 20px; padding: 16px; display: flex; align-items: center; gap: 16px; min-height: 90px; transition: 0.3s; opacity: 1; visibility: visible; }
     .info-box.hide { opacity: 0; visibility: hidden; }
@@ -41,19 +41,15 @@
       <div id="loading-overlay" class="loading-overlay"><div class="spinner"></div><span>Đang tải dữ liệu...</span></div>
       <button id="btn-switch" class="icon-btn" onclick="switchCamera()" title="Đổi camera" style="display: none;">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 9a9 9 0 0 0-14.77-5.08L1 9"></path>
-          <polyline points="1 4 1 9 6 9"></polyline>
-          <path d="M3 15a9 9 0 0 0 14.77 5.08L23 15"></path>
-          <polyline points="23 20 23 15 18 15"></polyline>
+          <path d="M21 9a9 9 0 0 0-14.77-5.08L1 9"></path><polyline points="1 4 1 9 6 9"></polyline>
+          <path d="M3 15a9 9 0 0 0 14.77 5.08L23 15"></path><polyline points="23 20 23 15 18 15"></polyline>
         </svg>
       </button>
       <video id="video" autoplay muted playsinline></video>
     </div>
 
     <div id="info-box" class="info-box hide">
-      <div id="info-visual" class="info-visual">
-        <img id="info-avatar" class="info-avatar" src="" style="display: none;">
-      </div>
+      <div id="info-visual" class="info-visual"><img id="info-avatar" class="info-avatar" src="" style="display: none;"></div>
       <div class="info-content">
         <span id="info-subtitle" class="info-subtitle">Nhận Diện Thành Công</span>
         <span id="info-title" class="info-title">Đang quét...</span>
@@ -77,10 +73,28 @@
 
     function updateStatusUI(state, title, avatarUrl = null) {
       if (state === 'hide') { infoBox.className = 'info-box hide'; return; }
-      infoTitle.innerText = title;
-      infoBox.className = `info-box ${state}`;
+      infoTitle.innerText = title; infoBox.className = `info-box ${state}`;
       if (avatarUrl) { infoAvatar.src = getDirectImageUrl(avatarUrl); infoAvatar.style.display = 'block'; } 
     }
+
+    function stopCamera() {
+      isRunning = false;
+      if (currentStream) {
+        currentStream.getTracks().forEach(t => t.stop());
+        currentStream = null;
+      }
+      if (video) video.srcObject = null;
+    }
+
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) {
+        stopCamera();
+      } else {
+        if (isDataReady) startCamera(currentFacingMode);
+      }
+    });
+    window.addEventListener("pagehide", stopCamera);
+    window.addEventListener("beforeunload", stopCamera);
 
     window.onload = () => { loadModelsAndCamera(); fetchDatabaseAsync(); }
 
@@ -93,7 +107,6 @@
           for (let i = 0; i < result.data.length; i++) {
             const empId = result.data[i][0], rawFaceData = result.data[i][2], empImage = result.data[i][3]; 
             if (!empId || !rawFaceData) continue;
-            
             employeeData[empId] = { name: "ID: " + empId, image: empImage };
             try {
               const parsedArray = typeof rawFaceData === 'string' ? JSON.parse(rawFaceData) : rawFaceData;
@@ -116,7 +129,7 @@
     }
 
     async function startCamera(facingMode) {
-      if (currentStream) currentStream.getTracks().forEach(t => t.stop());
+      stopCamera();
       isCameraReady = false;
       try {
         currentStream = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 1080 }, height: { ideal: 1920 }, facingMode: facingMode } });
@@ -135,8 +148,7 @@
 
     function checkAndStartApp() {
       if (isDataReady && isCameraReady) {
-        loadingOverlay.style.display = 'none';
-        btnSwitch.style.display = 'flex';
+        loadingOverlay.style.display = 'none'; btnSwitch.style.display = 'flex';
         if (faceMatcher) startSmoothRecognition();
       }
     }
