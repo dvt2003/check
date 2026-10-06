@@ -9,55 +9,42 @@
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
     body, html { width: 100%; height: 100%; background: radial-gradient(circle at 50% 20%, #0f172a 0%, #020617 100%); display: flex; justify-content: center; align-items: center; padding: 16px; color: #f8fafc; }
-    
     .app-card { background: rgba(30, 41, 59, 0.65); backdrop-filter: blur(24px); padding: 28px; border-radius: 36px; box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.05); width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 22px; animation: fadeIn 0.4s ease-out;}
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    
     .app-header h2 { font-size: 1.4rem; font-weight: 800; color: #38bdf8; text-align: center; text-transform: uppercase; letter-spacing: 1px;}
     .section-card { display: flex; flex-direction: column; gap: 18px; }
-    
     .camera-container { position: relative; width: 100%; aspect-ratio: 1; background: #000; border-radius: 28px; overflow: hidden; display: flex; align-items: center; justify-content: center; border: 2px solid #1e293b;}
     #video { width: 100%; height: 100%; object-fit: cover; filter: contrast(1.05); transition: 0.3s; }
     #video.front-camera { transform: scaleX(-1); }
-    
     .face-guide-circle { position: absolute; width: 210px; height: 210px; border: 2px dashed rgba(56, 189, 248, 0.4); border-radius: 50%; pointer-events: none; z-index: 5; transition: 0.3s; }
     .face-guide-circle.active { border-color: #38bdf8; border-style: solid; border-width: 3px; box-shadow: 0 0 35px rgba(56, 189, 248, 0.5); transform: scale(1.05); }
     
-    /* Nút Lật Camera Trong Suốt */
-    .icon-btn { position: absolute; bottom: 18px; right: 18px; width: 44px; height: 44px; background: transparent; color: #FFFFFF; border: none; outline: none; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 30; transition: transform 0.3s ease; }
+    /* Nút Lật Camera - Chuyển lên góc trên, thu nhỏ */
+    .icon-btn { position: absolute; top: 16px; right: 16px; width: 38px; height: 38px; background: transparent; color: #FFFFFF; border: none; outline: none; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 30; transition: transform 0.3s ease; }
     .icon-btn:hover { transform: scale(1.15) rotate(180deg); }
-    .icon-btn svg { width: 26px; height: 26px; stroke: currentColor; filter: drop-shadow(0px 2px 6px rgba(0,0,0,0.8)); }
+    .icon-btn svg { width: 22px; height: 22px; stroke: currentColor; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.8)); }
     
     .progress-container { width: 100%; background: rgba(255, 255, 255, 0.08); height: 6px; border-radius: 4px; overflow: hidden; margin-bottom: -10px;}
     .progress-bar { width: 0%; height: 100%; background: linear-gradient(90deg, #0284c7, #38bdf8); transition: 0.05s; }
     .status-box { font-size: 0.85rem; font-weight: 600; color: #94a3b8; text-align: center; min-height: 24px; }
-
     .btn { width: 100%; padding: 16px; border: none; border-radius: 20px; font-weight: 700; font-size: 1.05rem; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 8px; }
     .btn-primary { background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%); color: white; box-shadow: 0 10px 25px rgba(56, 189, 248, 0.3); }
     .btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 15px 30px rgba(56, 189, 248, 0.5); }
-    
     .nav-links { display: flex; justify-content: center; gap: 20px; margin-top: 10px; }
     .nav-link { font-size: 0.85rem; font-weight: 600; color: #94a3b8; text-decoration: none; transition: 0.2s; }
     .nav-link:hover { color: #38bdf8; text-decoration: underline; }
-
-    /* Màn hình Hiển thị Chi Tiết Profile */
     #section-profile { display: none; text-align: center; }
     .profile-avatar { width: 140px; height: 140px; margin: 0 auto 16px; border-radius: 50%; padding: 4px; background: linear-gradient(135deg, #0284c7, #38bdf8); box-shadow: 0 0 40px rgba(56, 189, 248, 0.4); }
     .profile-avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 4px solid #0f172a; }
-    
     .profile-title { color: #38bdf8; font-weight: 800; font-size: 1.3rem; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 2px;}
-    
     .info-group { background: rgba(2, 6, 23, 0.6); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 16px; padding: 14px 18px; display: flex; flex-direction: column; gap: 6px; text-align: left; margin-bottom: 12px;}
     .info-group label { font-size: 0.75rem; color: #64748b; text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px; }
     .info-group .value { font-size: 1.2rem; color: #ffffff; font-weight: 700; }
     .info-group .value.highlight { color: #38bdf8; font-size: 1.4rem; letter-spacing: 1px; }
-
-    /* Nút sao chép ID */
     .copy-btn { background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); color: #38bdf8; padding: 6px 12px; border-radius: 10px; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 6px; }
     .copy-btn:hover { background: rgba(56, 189, 248, 0.3); }
     .copy-btn.copied { background: #38bdf8; color: #020617; border-color: #38bdf8; }
     .flex-row { display: flex; justify-content: space-between; align-items: center; }
-
   </style>
 </head>
 <body>
@@ -66,13 +53,10 @@
     
     <div id="section-scan" class="section-card">
       <div class="camera-container" id="container">
-        <!-- NÚT LẬT CAMERA MỚI -->
         <button class="icon-btn" onclick="switchCamera()" title="Đổi camera">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 9a9 9 0 0 0-14.77-5.08L1 9"></path>
-            <polyline points="1 4 1 9 6 9"></polyline>
-            <path d="M3 15a9 9 0 0 0 14.77 5.08L23 15"></path>
-            <polyline points="23 20 23 15 18 15"></polyline>
+            <path d="M21 9a9 9 0 0 0-14.77-5.08L1 9"></path><polyline points="1 4 1 9 6 9"></polyline>
+            <path d="M3 15a9 9 0 0 0 14.77 5.08L23 15"></path><polyline points="23 20 23 15 18 15"></polyline>
           </svg>
         </button>
         <div id="guide-circle" class="face-guide-circle"></div>
@@ -89,7 +73,6 @@
       </div>
     </div>
 
-    <!-- MÀN HÌNH HIỂN THỊ HỒ SƠ -->
     <div id="section-profile" class="section-card">
       <div class="profile-title">Hồ Sơ Nhân Sự</div>
       <div class="profile-avatar"><img id="profile-img" src="" alt="Avatar"></div>
@@ -98,10 +81,8 @@
         <label>Mã Định Danh (ID)</label>
         <div class="flex-row">
           <div id="profile-id" class="value highlight">---</div>
-          <!-- NÚT COPY ID -->
           <button class="copy-btn" onclick="copyID('profile-id', this)">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-            Copy
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> Copy
           </button>
         </div>
       </div>
@@ -119,7 +100,6 @@
         <a href="register.html" class="nav-link">Đăng ký mới</a>
       </div>
     </div>
-
   </div>
 
   <script>
@@ -138,6 +118,27 @@
       return match ? `https://drive.google.com/thumbnail?id=${match[0]}&sz=w400-h400-c` : url;
     }
 
+    function stopCamera() {
+      if (currentStream) {
+        currentStream.getTracks().forEach(t => t.stop());
+        currentStream = null;
+      }
+      if (video) video.srcObject = null;
+    }
+
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) {
+        stopCamera();
+        isScanningActive = false;
+      } else {
+        if (document.getElementById('section-scan').style.display !== 'none' && isDataReady) {
+          startCamera(currentFacingMode);
+        }
+      }
+    });
+    window.addEventListener("pagehide", stopCamera);
+    window.addEventListener("beforeunload", stopCamera);
+
     window.onload = async () => {
       await faceapi.nets.tinyFaceDetector.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models');
       await faceapi.nets.faceLandmark68Net.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models');
@@ -149,18 +150,12 @@
       try {
         const response = await fetch(SCRIPT_URL);
         const result = await response.json();
-        
         if (result.status === "success" && result.data.length > 0) {
           const labeledDescriptors = [];
           for (let i = 0; i < result.data.length; i++) {
-            const empId = String(result.data[i][0]);
-            const empTime = result.data[i][1];
-            const rawFaceData = result.data[i][2];
-            const empImage = result.data[i][3];
-
+            const empId = String(result.data[i][0]), empTime = result.data[i][1], rawFaceData = result.data[i][2], empImage = result.data[i][3];
             if (!empId || !rawFaceData) continue;
             employeeData[empId] = { id: empId, time: empTime, image: empImage };
-
             try {
               const parsed = typeof rawFaceData === 'string' ? JSON.parse(rawFaceData) : rawFaceData;
               if (Array.isArray(parsed)) labeledDescriptors.push(new faceapi.LabeledFaceDescriptors(empId, [new Float32Array(parsed)]));
@@ -169,45 +164,37 @@
           if (labeledDescriptors.length > 0) existingFaceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.40);
         }
       } catch(e) {}
-      
       isDataReady = true; startScanningProcess();
     }
 
     async function startCamera(facingMode) {
-      if (currentStream) currentStream.getTracks().forEach(t => t.stop());
+      stopCamera();
       try {
         currentStream = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 720 }, height: { ideal: 720 }, facingMode: facingMode } });
         video.srcObject = currentStream;
         video.className = facingMode === "user" ? "front-camera" : "back-camera";
         video.onloadedmetadata = () => { video.play(); startScanningProcess(); };
-      } catch(err) { alert("Lỗi Camera!"); }
+      } catch(err) {}
     }
 
-    function switchCamera() {
-      currentFacingMode = (currentFacingMode === "user") ? "environment" : "user";
-      startCamera(currentFacingMode);
-    }
+    function switchCamera() { currentFacingMode = (currentFacingMode === "user") ? "environment" : "user"; startCamera(currentFacingMode); }
 
     function startScanningProcess() {
       if (!isDataReady || video.readyState < 2) return;
       statusBox.innerText = "Đưa khuôn mặt vào camera để tra cứu";
       statusBox.style.color = "#38bdf8";
-      scanTimer = 0; isScanningActive = true;
-      runLookupLoop();
+      scanTimer = 0; isScanningActive = true; runLookupLoop();
     }
 
     async function runLookupLoop() {
       const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.5 });
-      const targetTimeMs = 300; 
-      const frameIntervalMs = 30; 
-      let lastTime = Date.now();
+      const targetTimeMs = 300; const frameIntervalMs = 30; let lastTime = Date.now();
 
       const detectFrame = async () => {
         if (!isScanningActive || video.paused || video.ended || !existingFaceMatcher) {
             if(isScanningActive) requestAnimationFrame(detectFrame);
             return;
         }
-
         const now = Date.now();
         if (now - lastTime >= frameIntervalMs) {
           lastTime = now;
@@ -217,13 +204,9 @@
               const matchResult = existingFaceMatcher.findBestMatch(detection.descriptor);
               if (matchResult.label !== "unknown") {
                 scanTimer += frameIntervalMs;
-                progressBar.style.width = `${Math.min(100, (scanTimer / targetTimeMs) * 100)}%`;
-                guideCircle.classList.add('active');
+                progressBar.style.width = `${Math.min(100, (scanTimer / targetTimeMs) * 100)}%`; guideCircle.classList.add('active');
                 statusBox.innerText = `Đang trích xuất hồ sơ...`;
-
-                if (scanTimer >= targetTimeMs) {
-                  isScanningActive = false; showProfile(matchResult.label); return; 
-                }
+                if (scanTimer >= targetTimeMs) { isScanningActive = false; showProfile(matchResult.label); return; }
               } else { resetCountdown("👤 Khuôn mặt người lạ (Chưa đăng ký)"); }
             } else { resetCountdown("🔍 Đang quét tìm khuôn mặt..."); }
           } catch (err) {}
@@ -241,7 +224,7 @@
     }
 
     function showProfile(id) {
-      video.pause();
+      stopCamera(); 
       const emp = employeeData[id];
       if(!emp) return;
 
@@ -260,20 +243,14 @@
       scanTimer = 0; progressBar.style.width = '0%'; guideCircle.classList.remove('active');
       statusBox.innerText = "Đưa khuôn mặt vào camera để tra cứu";
       
-      video.play(); isScanningActive = true; runLookupLoop();
+      startCamera(currentFacingMode); 
     }
 
-    // Hàm sao chép ID vào bộ nhớ đệm
     function copyID(elementId, btn) {
       const text = document.getElementById(elementId).innerText;
       navigator.clipboard.writeText(text).then(() => {
-        const originalHTML = btn.innerHTML;
-        btn.innerHTML = "✅ Đã chép";
-        btn.classList.add("copied");
-        setTimeout(() => {
-          btn.innerHTML = originalHTML;
-          btn.classList.remove("copied");
-        }, 2000);
+        const originalHTML = btn.innerHTML; btn.innerHTML = "✅ Đã chép"; btn.classList.add("copied");
+        setTimeout(() => { btn.innerHTML = originalHTML; btn.classList.remove("copied"); }, 2000);
       });
     }
   </script>
