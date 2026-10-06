@@ -18,13 +18,13 @@
     #video.front-camera, canvas.front-camera { transform: scaleX(-1); -webkit-transform: scaleX(-1); }
     canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
     
-    .icon-btn { position: absolute; top: 16px; right: 16px; width: 38px; height: 38px; background: transparent; color: #FFFFFF; border: none; outline: none; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 30; transition: transform 0.3s ease; -webkit-transition: -webkit-transform 0.3s ease;}
+    /* ĐÃ THU NHỎ ICON */
+    .icon-btn { position: absolute; top: 14px; right: 14px; width: 32px; height: 32px; background: transparent; color: #FFFFFF; border: none; outline: none; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 30; transition: transform 0.3s ease; -webkit-transition: -webkit-transform 0.3s ease;}
     .icon-btn:hover { transform: scale(1.15) rotate(180deg); -webkit-transform: scale(1.15) rotate(180deg); }
-    .icon-btn svg { width: 22px; height: 22px; stroke: currentColor; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.8)); -webkit-filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.8));}
+    .icon-btn svg { width: 18px; height: 18px; stroke: currentColor; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.8)); -webkit-filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.8));}
     
     .info-box { background: #F8FAFC; border: 2px solid #E2E8F0; border-radius: 20px; padding: 16px; display: flex; align-items: center; gap: 16px; min-height: 90px; transition: opacity 0.3s ease, visibility 0.3s ease; opacity: 1; visibility: visible; }
     
-    /* TRẠNG THÁI TÀNG HÌNH: Chỉ làm trong suốt, giữ nguyên kích thước bố cục */
     .info-box.hide { opacity: 0; visibility: hidden; pointer-events: none; }
     
     .info-box.loading { background: #EEF2FF; border-color: #C7D2FE; }
@@ -61,7 +61,7 @@
       <video id="video" autoplay muted playsinline></video>
     </div>
 
-    <!-- Hộp thông báo mặc định chờ cấp quyền / tải DL -->
+    <!-- Hộp thông báo mặc định -->
     <div id="info-box" class="info-box loading">
       <div id="info-visual" class="info-visual"><div class="mini-spinner"></div></div>
       <div class="info-content">
@@ -117,7 +117,6 @@
     window.addEventListener("beforeunload", stopCamera);
 
     window.onload = () => { 
-      // ÉP TỰ ĐỘNG CHUYỂN HƯỚNG KHỎI MESSENGER/ZALO
       const ua = navigator.userAgent || navigator.vendor || window.opera;
       const inApp = (ua.indexOf("FBAN") > -1) || (ua.indexOf("FBAV") > -1) || (ua.indexOf("Zalo") > -1) || (ua.indexOf("Instagram") > -1) || (ua.indexOf("TikTok") > -1);
       
