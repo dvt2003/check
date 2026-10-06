@@ -22,11 +22,9 @@
     .icon-btn:hover { transform: scale(1.15) rotate(180deg); -webkit-transform: scale(1.15) rotate(180deg); }
     .icon-btn svg { width: 22px; height: 22px; stroke: currentColor; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.8)); -webkit-filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.8));}
     
-    .sync-indicator { display: none; } /* Bỏ cái tròn giữa vì đã có InfoBox phía dưới */
-
     .info-box { background: #F8FAFC; border: 2px solid #E2E8F0; border-radius: 20px; padding: 16px; display: flex; align-items: center; gap: 16px; min-height: 90px; transition: opacity 0.3s ease, visibility 0.3s ease; opacity: 1; visibility: visible; }
     
-    /* CHỈ LÀM TRONG SUỐT ĐỂ GIỮ KHOẢNG TRỐNG MẶC ĐỊNH */
+    /* TRẠNG THÁI TÀNG HÌNH: Chỉ làm trong suốt, giữ nguyên kích thước bố cục */
     .info-box.hide { opacity: 0; visibility: hidden; pointer-events: none; }
     
     .info-box.loading { background: #EEF2FF; border-color: #C7D2FE; }
@@ -34,7 +32,7 @@
     .info-box.loading .info-subtitle { color: #6366F1; }
     
     .info-box.error { background: #FFFBEB; border-color: #FCD34D; }
-    .info-box.error .info-visual { background: #F59E0B; }
+    .info-box.error .info-visual { background: #F59E0B; font-size: 1.5rem; }
     .info-box.error .info-subtitle { color: #D97706; }
     
     .info-box.success { background: #ECFDF5; border-color: #A7F3D0; }
@@ -63,7 +61,7 @@
       <video id="video" autoplay muted playsinline></video>
     </div>
 
-    <!-- Hộp thông báo mặc định -->
+    <!-- Hộp thông báo mặc định chờ cấp quyền / tải DL -->
     <div id="info-box" class="info-box loading">
       <div id="info-visual" class="info-visual"><div class="mini-spinner"></div></div>
       <div class="info-content">
@@ -81,12 +79,6 @@
 
     const video = document.getElementById('video'), container = document.getElementById('container'), btnSwitch = document.getElementById('btn-switch');
     const infoBox = document.getElementById('info-box'), infoAvatar = document.getElementById('info-avatar'), infoTitle = document.getElementById('info-title'), infoSubtitle = document.getElementById('info-subtitle'), infoVisual = document.getElementById('info-visual');
-
-    // HÀM PHÁT HIỆN TRÌNH DUYỆT NHÚNG (MESSENGER, ZALO...)
-    function isInAppBrowser() {
-      const ua = navigator.userAgent || navigator.vendor || window.opera;
-      return (ua.indexOf("FBAN") > -1) || (ua.indexOf("FBAV") > -1) || (ua.indexOf("Zalo") > -1) || (ua.indexOf("Instagram") > -1) || (ua.indexOf("TikTok") > -1);
-    }
 
     function getDirectImageUrl(url) {
       if (!url) return '';
@@ -125,11 +117,22 @@
     window.addEventListener("beforeunload", stopCamera);
 
     window.onload = () => { 
-      // NẾU MỞ BẰNG MESSENGER / ZALO -> CHẶN LẠI VÀ CẢNH BÁO
-      if (isInAppBrowser()) {
-        updateStatusUI('error', 'Vui lòng ấn "..." góc phải, chọn "Mở trong trình duyệt" (Chrome/Safari)', 'TRÌNH DUYỆT BỊ CHẶN CAMERA');
-        alert("⚠️ Trình duyệt của Messenger/Zalo không hỗ trợ Camera. Vui lòng bấm dấu 3 chấm góc phải trên cùng và chọn mở bằng Safari hoặc Chrome.");
-        return;
+      // ÉP TỰ ĐỘNG CHUYỂN HƯỚNG KHỎI MESSENGER/ZALO
+      const ua = navigator.userAgent || navigator.vendor || window.opera;
+      const inApp = (ua.indexOf("FBAN") > -1) || (ua.indexOf("FBAV") > -1) || (ua.indexOf("Zalo") > -1) || (ua.indexOf("Instagram") > -1) || (ua.indexOf("TikTok") > -1);
+      
+      if (inApp) {
+        const url = window.location.href;
+        const noProtocolUrl = url.replace(/^https?:\/\//, '');
+
+        if (/android/i.test(ua)) {
+          window.location.href = `intent://${noProtocolUrl}#Intent;scheme=https;package=com.android.chrome;end`;
+        } else if (/iphone|ipad|ipod/i.test(ua)) {
+          window.location.href = `googlechrome://${noProtocolUrl}`;
+        }
+        
+        updateStatusUI('error', 'Vui lòng ấn ( ... ) góc phải, chọn "Mở trong Safari / Chrome"', 'TRÌNH DUYỆT BỊ CHẶN CAMERA');
+        return; 
       }
 
       startCamera(currentFacingMode); 
@@ -171,6 +174,7 @@
       stopCamera();
       isCameraReady = false;
       try {
+        const getUserMedia = navigator.mediaDevices.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
         currentStream = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 1080 }, height: { ideal: 1920 }, facingMode: facingMode } });
         video.srcObject = currentStream;
         video.className = facingMode === "user" ? "front-camera" : "back-camera";
@@ -188,7 +192,7 @@
     }
 
     function switchCamera() {
-      updateStatusUI('loading', 'Đang chuyển...', 'CAMERA');
+      updateStatusUI('loading', 'Đang chuyển camera...', 'HỆ THỐNG');
       btnSwitch.style.display = 'none';
       currentFacingMode = (currentFacingMode === "user") ? "environment" : "user";
       startCamera(currentFacingMode);
@@ -196,7 +200,7 @@
 
     function checkAndStartApp() {
       if (isModelsLoaded && isDataReady && isCameraReady && !isRunning) {
-        updateStatusUI('hide'); // Ẩn info box nhưng VẪN GIỮ KHOẢNG TRỐNG
+        updateStatusUI('hide'); 
         btnSwitch.style.display = 'flex';
         if (faceMatcher) startSmoothRecognition();
       }
