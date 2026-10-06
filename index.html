@@ -3,28 +3,32 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Face ID - Check In</title>
+  <title>Face ID - Check In Siêu Tốc</title>
   <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
     body, html { width: 100%; height: 100%; background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%); display: flex; justify-content: center; align-items: center; padding: 15px; }
     .app-card { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(20px); padding: 16px; border-radius: 32px; box-shadow: 0 24px 48px rgba(0, 0, 0, 0.1); width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 16px; transition: 0.3s; }
+    
     .camera-container { position: relative; width: 100%; aspect-ratio: 3 / 4; background: #0F172A; border-radius: 24px; overflow: hidden; }
     #video { width: 100%; height: 100%; object-fit: cover; display: block; }
     #video.front-camera, canvas.front-camera { transform: scaleX(-1); }
     canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
-    .loading-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(6px); display: flex; flex-direction: column; align-items: center; justify-content: center; color: #FFFFFF; font-weight: 700; z-index: 20; gap: 12px; }
-    .spinner { width: 36px; height: 36px; border: 4px solid rgba(255, 255, 255, 0.2); border-top-color: #6366F1; border-radius: 50%; animation: spin 1s linear infinite; }
-    @keyframes spin { 100% { transform: rotate(360deg); } }
     
-    /* Nút Lật Camera - Chuyển lên góc trên, thu nhỏ */
+    /* Nút Lật Camera Trong Suốt (Góc Trên Bên Phải) */
     .icon-btn { position: absolute; top: 16px; right: 16px; width: 38px; height: 38px; background: transparent; color: #FFFFFF; border: none; outline: none; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 30; transition: transform 0.3s ease; }
     .icon-btn:hover { transform: scale(1.15) rotate(180deg); }
     .icon-btn svg { width: 22px; height: 22px; stroke: currentColor; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.8)); }
     
+    /* Viên thuốc báo hiệu tải ngầm siêu tinh tế (Nằm dưới đáy Camera) */
+    .sync-indicator { position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); background: rgba(15, 23, 42, 0.75); color: #38bdf8; padding: 8px 16px; border-radius: 30px; font-size: 0.8rem; font-weight: 700; z-index: 20; backdrop-filter: blur(8px); display: flex; gap: 8px; align-items: center; transition: opacity 0.4s ease, transform 0.4s ease; white-space: nowrap; border: 1px solid rgba(56, 189, 248, 0.3); box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+    .sync-indicator.hide { opacity: 0; transform: translate(-50%, 10px); pointer-events: none; }
+    .mini-spinner { width: 16px; height: 16px; border: 2.5px solid rgba(56, 189, 248, 0.3); border-top-color: #38bdf8; border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+
     .info-box { background: #F8FAFC; border: 2px solid #E2E8F0; border-radius: 20px; padding: 16px; display: flex; align-items: center; gap: 16px; min-height: 90px; transition: 0.3s; opacity: 1; visibility: visible; }
-    .info-box.hide { opacity: 0; visibility: hidden; }
+    .info-box.hide { opacity: 0; visibility: hidden; height: 0; min-height: 0; padding: 0 16px; border-width: 0; margin-top: -16px;}
     .info-box.success { background: #ECFDF5; border-color: #A7F3D0; }
     .info-box.success .info-visual { background: #10B981; border: 2px solid #34D399; }
     
@@ -38,13 +42,21 @@
 <body>
   <div class="app-card">
     <div class="camera-container" id="container">
-      <div id="loading-overlay" class="loading-overlay"><div class="spinner"></div><span>Đang tải dữ liệu...</span></div>
-      <button id="btn-switch" class="icon-btn" onclick="switchCamera()" title="Đổi camera" style="display: none;">
+      
+      <!-- Nút đổi camera gọn gàng góc trên -->
+      <button id="btn-switch" class="icon-btn" onclick="switchCamera()" title="Đổi camera">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M21 9a9 9 0 0 0-14.77-5.08L1 9"></path><polyline points="1 4 1 9 6 9"></polyline>
           <path d="M3 15a9 9 0 0 0 14.77 5.08L23 15"></path><polyline points="23 20 23 15 18 15"></polyline>
         </svg>
       </button>
+      
+      <!-- Viên thuốc báo tải dữ liệu ngầm cực xịn -->
+      <div id="sync-indicator" class="sync-indicator">
+        <div class="mini-spinner"></div>
+        <span>Đang tải dữ liệu...</span>
+      </div>
+
       <video id="video" autoplay muted playsinline></video>
     </div>
 
@@ -61,9 +73,13 @@
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx3nnZ45NKjve47jyhHHYYUTYxYExbxcoBGbn5SzfBHKBQtvtQ8HQSoyLopq7S4fJb9/exec"; 
     
     let faceMatcher = null, canvas = null, displaySize = null, currentFacingMode = "user", currentStream = null, isRunning = false, employeeData = {}, lastScanLabel = ""; 
-    let isDataReady = false, isCameraReady = false;
+    
+    // 3 cờ trạng thái để chạy Song Song (Cái nào xong trước kệ nó, đủ 3 cái là kích hoạt AI)
+    let isModelsLoaded = false;
+    let isDataReady = false;
+    let isCameraReady = false;
 
-    const video = document.getElementById('video'), container = document.getElementById('container'), loadingOverlay = document.getElementById('loading-overlay'), btnSwitch = document.getElementById('btn-switch'), infoBox = document.getElementById('info-box'), infoAvatar = document.getElementById('info-avatar'), infoTitle = document.getElementById('info-title');
+    const video = document.getElementById('video'), container = document.getElementById('container'), syncIndicator = document.getElementById('sync-indicator'), infoBox = document.getElementById('info-box'), infoAvatar = document.getElementById('info-avatar'), infoTitle = document.getElementById('info-title');
 
     function getDirectImageUrl(url) {
       if (!url) return '';
@@ -79,24 +95,31 @@
 
     function stopCamera() {
       isRunning = false;
-      if (currentStream) {
-        currentStream.getTracks().forEach(t => t.stop());
-        currentStream = null;
-      }
+      if (currentStream) { currentStream.getTracks().forEach(t => t.stop()); currentStream = null; }
       if (video) video.srcObject = null;
     }
 
     document.addEventListener("visibilitychange", () => {
-      if (document.hidden) {
-        stopCamera();
-      } else {
-        if (isDataReady) startCamera(currentFacingMode);
-      }
+      if (document.hidden) { stopCamera(); } else { if (isDataReady) startCamera(currentFacingMode); }
     });
     window.addEventListener("pagehide", stopCamera);
     window.addEventListener("beforeunload", stopCamera);
 
-    window.onload = () => { loadModelsAndCamera(); fetchDatabaseAsync(); }
+    // KÍCH HOẠT 3 TÁC VỤ CÙNG MỘT LÚC (TỐC ĐỘ BÀN THỜ)
+    window.onload = () => { 
+      startCamera(currentFacingMode); // Bật camera ngay lập tức 0s
+      loadModels();                   // Tải AI ngầm
+      fetchDatabaseAsync();           // Lấy dữ liệu Sheets ngầm
+    }
+
+    async function loadModels() {
+      try {
+        await faceapi.nets.tinyFaceDetector.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models');
+        await faceapi.nets.faceLandmark68Net.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models');
+        await faceapi.nets.faceRecognitionNet.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models');
+        isModelsLoaded = true; checkAndStartApp();
+      } catch (e) { alert("Lỗi tải AI. Vui lòng tải lại trang!"); }
+    }
 
     async function fetchDatabaseAsync() {
       try {
@@ -119,15 +142,6 @@
       isDataReady = true; checkAndStartApp();
     }
 
-    async function loadModelsAndCamera() {
-      try {
-        await faceapi.nets.tinyFaceDetector.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models');
-        await faceapi.nets.faceLandmark68Net.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models');
-        await faceapi.nets.faceRecognitionNet.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models');
-        startCamera(currentFacingMode);
-      } catch (e) {}
-    }
-
     async function startCamera(facingMode) {
       stopCamera();
       isCameraReady = false;
@@ -146,17 +160,19 @@
       } catch (err) {}
     }
 
-    function checkAndStartApp() {
-      if (isDataReady && isCameraReady) {
-        loadingOverlay.style.display = 'none'; btnSwitch.style.display = 'flex';
-        if (faceMatcher) startSmoothRecognition();
-      }
-    }
-
     function switchCamera() {
-      loadingOverlay.style.display = 'flex'; btnSwitch.style.display = 'none';
+      syncIndicator.classList.remove('hide'); // Hiện lại loading khi đổi camera
+      syncIndicator.innerHTML = '<div class="mini-spinner"></div><span>Đang chuyển...</span>';
       currentFacingMode = (currentFacingMode === "user") ? "environment" : "user";
       startCamera(currentFacingMode);
+    }
+
+    function checkAndStartApp() {
+      // Khi cả 3 yếu tố: AI, Data và Camera đều đã sẵn sàng 
+      if (isModelsLoaded && isDataReady && isCameraReady) {
+        syncIndicator.classList.add('hide'); // Tự động giấu viên thuốc báo hiệu
+        if (faceMatcher) startSmoothRecognition();
+      }
     }
 
     async function startSmoothRecognition() {
