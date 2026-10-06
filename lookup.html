@@ -10,15 +10,7 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
     body, html { width: 100%; height: 100%; background: radial-gradient(circle at 50% 20%, #0f172a 0%, #020617 100%); display: flex; justify-content: center; align-items: center; padding: 16px; color: #f8fafc; overflow: hidden; }
     
-    #permission-screen { position: absolute; inset: 0; z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(2, 6, 23, 0.95); backdrop-filter: blur(10px); padding: 20px; text-align: center; }
-    .perm-icon { font-size: 4rem; margin-bottom: 20px; animation: bounce 2s infinite ease-in-out; }
-    @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
-    .perm-title { font-size: 1.5rem; font-weight: 800; color: #38bdf8; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;}
-    .perm-desc { font-size: 0.95rem; color: #94a3b8; max-width: 300px; margin-bottom: 30px; line-height: 1.5; }
-    .perm-btn { background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%); color: white; border: none; padding: 14px 28px; border-radius: 20px; font-weight: 700; font-size: 1rem; cursor: pointer; box-shadow: 0 10px 25px rgba(56, 189, 248, 0.3); transition: transform 0.2s, box-shadow 0.2s; display: flex; align-items: center; gap: 8px; }
-    .perm-btn:hover { transform: translateY(-2px); box-shadow: 0 15px 30px rgba(56, 189, 248, 0.5); }
-
-    .app-card { display: none; background: rgba(30, 41, 59, 0.65); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); padding: 28px; border-radius: 36px; box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.05); width: 100%; max-width: 420px; flex-direction: column; gap: 22px; animation: fadeIn 0.4s ease-out;}
+    .app-card { display: flex; background: rgba(30, 41, 59, 0.65); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); padding: 28px; border-radius: 36px; box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.05); width: 100%; max-width: 420px; flex-direction: column; gap: 22px; animation: fadeIn 0.4s ease-out;}
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     
     .app-header h2 { font-size: 1.4rem; font-weight: 800; color: #38bdf8; text-align: center; text-transform: uppercase; letter-spacing: 1px;}
@@ -59,17 +51,6 @@
   </style>
 </head>
 <body>
-
-  <!-- MÀN HÌNH XIN QUYỀN CAMERA -->
-  <div id="permission-screen">
-    <div class="perm-icon">👁️</div>
-    <div class="perm-title">Tra Cứu Dữ Liệu</div>
-    <div class="perm-desc">Hệ thống yêu cầu quyền truy cập Camera để có thể quét và tra cứu hồ sơ.</div>
-    <button class="perm-btn" onclick="requestCameraAccess()">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
-      Khởi động Camera
-    </button>
-  </div>
 
   <div class="app-card" id="app-card">
     <div class="app-header"><h2>Tra Cứu Dữ Liệu</h2></div>
@@ -149,37 +130,23 @@
     }
 
     document.addEventListener("visibilitychange", () => {
-      if (document.getElementById('app-card').style.display === 'flex') {
-        if (document.hidden) {
-          stopCamera(); isScanningActive = false;
-        } else {
-          if (document.getElementById('section-scan').style.display !== 'none' && isDataReady) {
-            startCamera(currentFacingMode);
-          }
+      if (document.hidden) {
+        stopCamera(); isScanningActive = false;
+      } else {
+        if (document.getElementById('section-scan').style.display !== 'none' && isDataReady) {
+          startCamera(currentFacingMode);
         }
       }
     });
     window.addEventListener("pagehide", stopCamera);
     window.addEventListener("beforeunload", stopCamera);
 
-    async function requestCameraAccess() {
-      try {
-        const testStream = await navigator.mediaDevices.getUserMedia({ video: true });
-        testStream.getTracks().forEach(t => t.stop());
-        
-        document.getElementById('permission-screen').style.display = 'none';
-        document.getElementById('app-card').style.display = 'flex';
-        initSystem();
-      } catch (err) {
-        alert("Bạn đã từ chối quyền Camera. Vui lòng tải lại trang và cho phép để sử dụng hệ thống.");
-      }
-    }
-
-    async function initSystem() {
+    // GỌI CAMERA NGẦM NGAY KHI MỞ TRANG
+    window.onload = () => {
       startCamera(currentFacingMode);
       loadModels();
-      fetchDatabaseAsync();
-    }
+      fetchDatabaseAsync(); 
+    };
 
     async function loadModels() {
       try {
@@ -194,6 +161,7 @@
       try {
         const response = await fetch(SCRIPT_URL);
         const result = await response.json();
+        
         if (result.status === "success" && result.data.length > 0) {
           const labeledDescriptors = [];
           for (let i = 0; i < result.data.length; i++) {
@@ -208,6 +176,7 @@
           if (labeledDescriptors.length > 0) existingFaceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.40);
         }
       } catch(e) {}
+      
       isDataReady = true; checkAndStartApp();
     }
 
@@ -215,12 +184,13 @@
       stopCamera();
       isCameraReady = false;
       try {
+        const getUserMedia = navigator.mediaDevices.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
         currentStream = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 720 }, height: { ideal: 720 }, facingMode: facingMode } });
         video.srcObject = currentStream;
         video.className = facingMode === "user" ? "front-camera" : "back-camera";
         video.onloadedmetadata = () => { video.play(); isCameraReady = true; checkAndStartApp(); };
       } catch(err) {
-        statusBox.innerText = "⚠ Bị từ chối Camera!";
+        statusBox.innerText = "⚠ Bị từ chối Camera. Vui lòng cấp quyền!";
         statusBox.style.color = "#f87171";
       }
     }
