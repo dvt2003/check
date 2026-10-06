@@ -104,7 +104,7 @@
     }
 
     document.addEventListener("visibilitychange", () => {
-      if (document.hidden) { stopCamera(); } else { if (isDataReady) startCamera(currentFacingMode); }
+      if (document.hidden) { stopCamera(); } else { if (isDataReady && !isRunning) startCamera(currentFacingMode); }
     });
     window.addEventListener("pagehide", stopCamera);
     window.addEventListener("beforeunload", stopCamera);
@@ -174,7 +174,7 @@
     }
 
     function checkAndStartApp() {
-      if (isModelsLoaded && isDataReady && isCameraReady) {
+      if (isModelsLoaded && isDataReady && isCameraReady && !isRunning) {
         syncIndicator.classList.add('hide'); 
         if (faceMatcher) startSmoothRecognition();
       }
