@@ -44,14 +44,17 @@
     .flex-row { display: flex; gap: 12px; margin-top: 10px; width: 100%; }
     .flex-row .btn { flex: 1; }
 
-    #section-success { text-align: center; display: none; }
-    .success-avatar { width: 120px; height: 120px; margin: 0 auto 10px; border-radius: 50%; padding: 4px; background: linear-gradient(135deg, #10B981, #34D399); box-shadow: 0 0 30px rgba(16, 185, 129, 0.4); }
-    .success-avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 3px solid #1e293b; }
+    #section-success, #section-duplicate { text-align: center; display: none; }
+    .success-avatar, .duplicate-avatar { width: 120px; height: 120px; margin: 0 auto 10px; border-radius: 50%; padding: 4px; box-shadow: 0 0 30px rgba(0, 0, 0, 0.4); }
+    .success-avatar { background: linear-gradient(135deg, #10B981, #34D399); }
+    .duplicate-avatar { background: linear-gradient(135deg, #F59E0B, #FBBF24); }
+    .success-avatar img, .duplicate-avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 3px solid #1e293b; }
     
     .info-group { background: rgba(15, 23, 42, 0.5); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 12px 16px; display: flex; flex-direction: column; gap: 4px; text-align: left; margin-bottom: 10px;}
     .info-group label { font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
     .info-group .value { font-size: 1.1rem; color: #ffffff; font-weight: 700; }
     .info-group .value.highlight { color: #34D399; font-size: 1.3rem; letter-spacing: 1px; }
+    .info-group .value.warning { color: #FBBF24; font-size: 1.2rem; }
     
     .sync-status { font-size: 0.75rem; color: #94a3b8; margin-top: 5px; font-weight: 600; }
     .copy-btn { background: rgba(52, 211, 153, 0.15); border: 1px solid rgba(52, 211, 153, 0.3); color: #34D399; padding: 6px 12px; border-radius: 10px; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 6px; }
@@ -95,6 +98,29 @@
       </div>
     </div>
 
+    <!-- MÀN HÌNH BÁO TRÙNG LẶP (ĐÃ CÓ TRÊN HỆ THỐNG) -->
+    <div id="section-duplicate" class="section-card">
+      <div class="duplicate-avatar"><img id="dup-img" src="" alt="Avatar Cũ"></div>
+      <h3 style="color: #FBBF24; font-weight: 800; font-size: 1.2rem;">Khuôn mặt đã tồn tại!</h3>
+      
+      <div class="info-group">
+        <label>Mã ID Đã Đăng Ký</label>
+        <div class="flex-row-between">
+          <div id="dup-id" class="value warning">---</div>
+          <button class="copy-btn" onclick="copyID('dup-id', this)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> Copy
+          </button>
+        </div>
+      </div>
+      
+      <div class="info-group">
+        <label>Thời Gian Đăng Ký Trước Đó</label>
+        <div id="dup-time" class="value">---</div>
+      </div>
+
+      <button class="btn btn-primary" style="margin-top: 10px;" onclick="window.location.reload()">🔄 Thử lại người khác</button>
+    </div>
+
     <!-- MÀN HÌNH THÀNH CÔNG -->
     <div id="section-success" class="section-card">
       <div class="success-avatar"><img id="success-img" src="" alt="Avatar"></div>
@@ -123,12 +149,18 @@
     let currentStream = null, currentFacingMode = "user", existingFaceMatcher = null;
     let isDataReady = false, isCameraReady = false, isModelsLoaded = false;
     let isScanningActive = false, scanTimer = 0, collectedDescriptors = [];
-    let listExistingIDs = []; 
+    let listExistingIDs = [], employeeDatabase = {}; 
     let tempDescriptor = [], tempImageBase64 = "";
 
     const video = document.getElementById('video');
     const statusBox = document.getElementById('status-box'), progressBar = document.getElementById('progress-bar'), guideCircle = document.getElementById('guide-circle');
     
+    function getDirectImageUrl(url) {
+      if (!url) return '';
+      const match = url.match(/[-\w]{25,}/);
+      return match ? `https://drive.google.com/thumbnail?id=${match[0]}&sz=w400-h400-c` : url;
+    }
+
     function stopCamera() {
       if (currentStream) {
         currentStream.getTracks().forEach(track => track.stop());
@@ -138,11 +170,13 @@
     }
 
     document.addEventListener("visibilitychange", () => {
-      if (document.hidden) {
-        stopCamera(); isScanningActive = false;
-      } else {
-        if (document.getElementById('section-scan').style.display !== 'none' && isDataReady) {
-          startCamera(currentFacingMode);
+      if (document.getElementById('app-card').style.display === 'flex') {
+        if (document.hidden) {
+          stopCamera(); isScanningActive = false;
+        } else {
+          if (document.getElementById('section-scan').style.display !== 'none' && isDataReady) {
+            startCamera(currentFacingMode);
+          }
         }
       }
     });
@@ -188,9 +222,12 @@
         if (result.status === "success" && result.data.length > 0) {
           const labeledDescriptors = [];
           for (let i = 0; i < result.data.length; i++) {
-            const empId = String(result.data[i][0]), rawFaceData = result.data[i][2];
+            const empId = String(result.data[i][0]), empTime = result.data[i][1], rawFaceData = result.data[i][2], empImage = result.data[i][3];
             if (!empId || !rawFaceData) continue;
-            listExistingIDs.push(empId); 
+            
+            listExistingIDs.push(empId);
+            employeeDatabase[empId] = { id: empId, time: empTime, image: empImage };
+
             try {
               const parsed = typeof rawFaceData === 'string' ? JSON.parse(rawFaceData) : rawFaceData;
               if (Array.isArray(parsed)) labeledDescriptors.push(new faceapi.LabeledFaceDescriptors(empId, [new Float32Array(parsed)]));
@@ -232,7 +269,7 @@
 
     async function runAutoDetectionLoop() {
       const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.5 });
-      const targetTimeMs = 200; // ĐÃ GIẢM XUỐNG 0,2 GIÂY Ở ĐĂNG KÝ
+      const targetTimeMs = 200; // 0,2 giây
       const frameIntervalMs = 25; let lastTime = Date.now();
 
       const detectFrame = async () => {
@@ -303,17 +340,21 @@
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
       const avgDescriptor = getAverageDescriptor(collectedDescriptors);
-      
+      tempImageBase64 = canvas.toDataURL('image/jpeg', 0.85);
+
+      // KIỂM TRA TRÙNG LẶP GƯƠNG MẶT
       if (existingFaceMatcher) {
         const matchResult = existingFaceMatcher.findBestMatch(new Float32Array(avgDescriptor));
         if (matchResult.label !== "unknown") {
-          alert(`⚠ Khuôn mặt này đã được đăng ký trước đó với mã ID: "${matchResult.label}"!`);
-          window.location.reload(); return;
+          // NẾU ĐÃ TỒN TẠI -> HIỆN THÔNG TIN CŨ THAY VÌ BÁO ALERT
+          showDuplicateScreen(matchResult.label, tempImageBase64);
+          return;
         }
       }
 
-      tempDescriptor = avgDescriptor; tempImageBase64 = canvas.toDataURL('image/jpeg', 0.85);
+      tempDescriptor = avgDescriptor;
 
+      // NẾU CHƯA CÓ -> CHUYỂN SANG MÀN HÌNH XÁC NHẬN LƯU
       document.getElementById('section-scan').style.display = 'none';
       document.getElementById('section-confirm').style.display = 'block';
       document.getElementById('preview-img').src = tempImageBase64;
@@ -368,6 +409,22 @@
         avg[i] = sum / descriptors.length;
       }
       return Array.from(avg);
+    }
+
+    // HIỂN THỊ KHI GƯƠNG MẶT ĐÃ TỒN TẠI
+    function showDuplicateScreen(id, capturedImg) {
+      stopCamera();
+      document.getElementById('section-scan').style.display = 'none';
+      document.getElementById('section-duplicate').style.display = 'block';
+      document.getElementById('header-subtitle').innerText = "Khuôn mặt đã được đăng ký";
+
+      const existingEmp = employeeDatabase[id];
+      document.getElementById('dup-id').innerText = id;
+      document.getElementById('dup-time').innerText = existingEmp && existingEmp.time ? existingEmp.time : "Đã có trên hệ thống";
+      
+      // Ưu tiên hiện ảnh gốc trên hệ thống, nếu không có thì hiện ảnh vừa chụp
+      const avatarToDisplay = existingEmp && existingEmp.image ? getDirectImageUrl(existingEmp.image) : capturedImg;
+      document.getElementById('dup-img').src = avatarToDisplay;
     }
 
     function showSuccessScreen(id, time, imageSrc) {
