@@ -118,14 +118,14 @@
       if (video) video.srcObject = null;
     }
 
+    // NGỪNG SỬ DỤNG CAMERA KHI THOÁT
     document.addEventListener("visibilitychange", () => {
-      if (document.getElementById('app-card').style.display === 'flex') {
-        if (document.hidden) {
-          stopCamera(); isScanningActive = false;
-        } else {
-          if (document.getElementById('section-scan').style.display !== 'none' && isDataReady) {
-            startCamera(currentFacingMode);
-          }
+      if (document.hidden) {
+        stopCamera(); 
+        isScanningActive = false;
+      } else {
+        if (document.getElementById('section-scan').style.display !== 'none' && isDataReady) {
+          startCamera(currentFacingMode);
         }
       }
     });
@@ -139,11 +139,13 @@
       if (inApp) {
         const url = window.location.href;
         const noProtocolUrl = url.replace(/^https?:\/\//, '');
+
         if (/android/i.test(ua)) {
           window.location.href = `intent://${noProtocolUrl}#Intent;scheme=https;package=com.android.chrome;end`;
         } else if (/iphone|ipad|ipod/i.test(ua)) {
           window.location.href = `googlechrome://${noProtocolUrl}`;
         }
+        
         statusBox.innerText = "⚠ Ấn dấu ( ... ) góc phải, chọn Mở bằng Safari / Chrome";
         statusBox.style.color = "#fbbf24";
         return; 
@@ -217,7 +219,7 @@
 
     async function runLookupLoop() {
       const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.5 });
-      const targetTimeMs = 100; // ĐÃ GIẢM XUỐNG 0,1 GIÂY Ở TRA CỨU
+      const targetTimeMs = 100; // TỐC ĐỘ 0.1 GIÂY
       const frameIntervalMs = 30; let lastTime = Date.now();
 
       const detectFrame = async () => {
