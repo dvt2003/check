@@ -137,7 +137,6 @@
       if (video) video.srcObject = null;
     }
 
-    // NGỪNG SỬ DỤNG CAMERA KHI THOÁT
     document.addEventListener("visibilitychange", () => {
       if (document.hidden) {
         stopCamera(); isScanningActive = false;
@@ -233,7 +232,7 @@
 
     async function runAutoDetectionLoop() {
       const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.5 });
-      const targetTimeMs = 1000; // ĐÃ GIẢM XUỐNG 1 GIÂY Ở ĐĂNG KÝ
+      const targetTimeMs = 200; // ĐÃ GIẢM XUỐNG 0,2 GIÂY Ở ĐĂNG KÝ
       const frameIntervalMs = 25; let lastTime = Date.now();
 
       const detectFrame = async () => {
@@ -275,7 +274,7 @@
                 } else {
                   scanTimer += frameIntervalMs; collectedDescriptors.push(detection.descriptor);
                   progressBar.style.width = `${Math.min(100, (scanTimer / targetTimeMs) * 100)}%`; guideCircle.classList.add('active');
-                  statusBox.innerText = "Giữ cố định... đang chụp"; statusBox.style.color = "#34d399"; 
+                  statusBox.innerText = "Đang chụp..."; statusBox.style.color = "#34d399"; 
                   if (scanTimer >= targetTimeMs) { isScanningActive = false; processCapturedPhoto(); return; }
                 }
               } else { resetCountdown("⚠ Hãy đưa mặt vào giữa khung tròn"); }
