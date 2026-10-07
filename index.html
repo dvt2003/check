@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Face ID - Check In Siêu Tốc</title>
+  <title>Face ID - Check In</title>
   <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -18,26 +18,19 @@
     #video.front-camera, canvas.front-camera { transform: scaleX(-1); -webkit-transform: scaleX(-1); }
     canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
     
-    /* ĐÃ THU NHỎ ICON */
     .icon-btn { position: absolute; top: 14px; right: 14px; width: 32px; height: 32px; background: transparent; color: #FFFFFF; border: none; outline: none; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 30; transition: transform 0.3s ease; -webkit-transition: -webkit-transform 0.3s ease;}
     .icon-btn:hover { transform: scale(1.15) rotate(180deg); -webkit-transform: scale(1.15) rotate(180deg); }
     .icon-btn svg { width: 18px; height: 18px; stroke: currentColor; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.8)); -webkit-filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.8));}
     
     .info-box { background: #F8FAFC; border: 2px solid #E2E8F0; border-radius: 20px; padding: 16px; display: flex; align-items: center; gap: 16px; min-height: 90px; transition: opacity 0.3s ease, visibility 0.3s ease; opacity: 1; visibility: visible; }
-    
     .info-box.hide { opacity: 0; visibility: hidden; pointer-events: none; }
-    
     .info-box.loading { background: #EEF2FF; border-color: #C7D2FE; }
     .info-box.loading .info-visual { background: #6366F1; }
     .info-box.loading .info-subtitle { color: #6366F1; }
-    
     .info-box.error { background: #FFFBEB; border-color: #FCD34D; }
-    .info-box.error .info-visual { background: #F59E0B; font-size: 1.5rem; }
-    .info-box.error .info-subtitle { color: #D97706; }
-    
+    .info-box.error .info-visual { background: #F59E0B; }
     .info-box.success { background: #ECFDF5; border-color: #A7F3D0; }
     .info-box.success .info-visual { background: #10B981; border: 2px solid #34D399; }
-    .info-box.success .info-subtitle { color: #10B981; }
     
     .info-visual { width: 60px; height: 60px; flex-shrink: 0; background: #94A3B8; border-radius: 16px; overflow: hidden; display: flex; align-items: center; justify-content: center; position: relative; color: white; }
     .info-avatar { width: 100%; height: 100%; object-fit: cover; z-index: 3; position: absolute; top: 0; left: 0; }
@@ -61,7 +54,6 @@
       <video id="video" autoplay muted playsinline></video>
     </div>
 
-    <!-- Hộp thông báo mặc định -->
     <div id="info-box" class="info-box loading">
       <div id="info-visual" class="info-visual"><div class="mini-spinner"></div></div>
       <div class="info-content">
@@ -87,10 +79,7 @@
     }
 
     function updateStatusUI(state, title, subtitle, avatarUrl = null) {
-      if (state === 'hide') { 
-        infoBox.className = 'info-box hide'; 
-        return; 
-      }
+      if (state === 'hide') { infoBox.className = 'info-box hide'; return; }
       infoTitle.innerText = title; 
       infoSubtitle.innerText = subtitle;
       infoBox.className = `info-box ${state}`;
@@ -106,12 +95,20 @@
 
     function stopCamera() {
       isRunning = false;
-      if (currentStream) { currentStream.getTracks().forEach(t => t.stop()); currentStream = null; }
+      if (currentStream) {
+        currentStream.getTracks().forEach(track => track.stop());
+        currentStream = null;
+      }
       if (video) video.srcObject = null;
     }
 
+    // NGỪNG SỬ DỤNG CAMERA KHI THOÁT HOẶC CHUYỂN TAB
     document.addEventListener("visibilitychange", () => {
-      if (document.hidden) { stopCamera(); } else { if (isDataReady && !isRunning) startCamera(currentFacingMode); }
+      if (document.hidden) {
+        stopCamera();
+      } else {
+        if (isDataReady && !isRunning) startCamera(currentFacingMode);
+      }
     });
     window.addEventListener("pagehide", stopCamera);
     window.addEventListener("beforeunload", stopCamera);
@@ -123,13 +120,11 @@
       if (inApp) {
         const url = window.location.href;
         const noProtocolUrl = url.replace(/^https?:\/\//, '');
-
         if (/android/i.test(ua)) {
           window.location.href = `intent://${noProtocolUrl}#Intent;scheme=https;package=com.android.chrome;end`;
         } else if (/iphone|ipad|ipod/i.test(ua)) {
           window.location.href = `googlechrome://${noProtocolUrl}`;
         }
-        
         updateStatusUI('error', 'Vui lòng ấn ( ... ) góc phải, chọn "Mở trong Safari / Chrome"', 'TRÌNH DUYỆT BỊ CHẶN CAMERA');
         return; 
       }
@@ -173,7 +168,6 @@
       stopCamera();
       isCameraReady = false;
       try {
-        const getUserMedia = navigator.mediaDevices.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
         currentStream = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 1080 }, height: { ideal: 1920 }, facingMode: facingMode } });
         video.srcObject = currentStream;
         video.className = facingMode === "user" ? "front-camera" : "back-camera";
