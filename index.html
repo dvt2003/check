@@ -2,24 +2,24 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Face ID - Check In</title>
   <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet">
   <style>
     *{box-sizing:border-box;margin:0;padding:0;font-family:'Plus Jakarta Sans',sans-serif}
-    body,html{width:100%;height:100%;background:linear-gradient(135deg,#e0c3fc 0%,#8ec5fc 100%);display:flex;justify-content:center;align-items:center;padding:15px;overflow:hidden}
-    .app-card{display:flex;background:rgba(255,255,255,0.85);backdrop-filter:blur(20px);padding:16px;border-radius:32px;box-shadow:0 24px 48px rgba(0,0,0,0.1);width:100%;max-width:480px;flex-direction:column;gap:16px;animation:fadeIn .5s ease-out}
+    body,html{width:100%;min-height:100vh;min-height:100dvh;background:linear-gradient(135deg,#e0c3fc 0%,#8ec5fc 100%);display:flex;justify-content:center;align-items:center;padding:15px}
+    .app-card{display:flex;background:rgba(255,255,255,0.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);padding:clamp(16px,4vw,24px);border-radius:clamp(20px,5vw,32px);box-shadow:0 24px 48px rgba(0,0,0,0.1);width:100%;max-width:480px;flex-direction:column;gap:clamp(12px,3vw,16px);animation:fadeIn .5s ease-out}
     @keyframes fadeIn{from{opacity:0;transform:scale(0.95)}to{opacity:1;transform:scale(1)}}
-    .camera-container{position:relative;width:100%;aspect-ratio:3/4;background:#0F172A;border-radius:24px;overflow:hidden;-webkit-mask-image:-webkit-radial-gradient(white,black)}
+    .camera-container{position:relative;width:100%;aspect-ratio:3/4;max-height:65vh;background:#0F172A;border-radius:clamp(16px,4vw,24px);overflow:hidden;-webkit-mask-image:-webkit-radial-gradient(white,black)}
     #video{width:100%;height:100%;object-fit:cover;display:block}
-    #video.front-camera,canvas.front-camera{transform:scaleX(-1)}
+    #video.front-camera,canvas.front-camera{transform:scaleX(-1);-webkit-transform:scaleX(-1)}
     canvas{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10}
     .icon-btn{position:absolute;top:14px;right:14px;width:32px;height:32px;background:0 0;color:#FFF;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:30;transition:.3s}
-    .icon-btn:hover{transform:scale(1.15) rotate(180deg)}
+    .icon-btn:hover{transform:scale(1.15) rotate(180deg);-webkit-transform:scale(1.15) rotate(180deg)}
     .icon-btn svg{width:18px;height:18px;stroke:currentColor;filter:drop-shadow(0 2px 4px rgba(0,0,0,.8))}
-    .info-box{background:#F8FAFC;border:2px solid #E2E8F0;border-radius:20px;padding:16px;display:flex;align-items:center;gap:16px;min-height:90px;transition:.3s}
-    .info-box.hide{opacity:0;visibility:hidden;pointer-events:none}
+    .info-box{background:#F8FAFC;border:2px solid #E2E8F0;border-radius:clamp(16px,4vw,20px);padding:clamp(12px,3vw,16px);display:flex;align-items:center;gap:clamp(12px,3vw,16px);min-height:85px;transition:.3s}
+    .info-box.hide{opacity:0;visibility:hidden;display:none}
     .info-box.loading{background:#EEF2FF;border-color:#C7D2FE}
     .info-box.loading .info-visual{background:#6366F1}
     .info-box.loading .info-subtitle{color:#6366F1}
@@ -27,11 +27,11 @@
     .info-box.error .info-visual{background:#F59E0B}
     .info-box.success{background:#ECFDF5;border-color:#A7F3D0}
     .info-box.success .info-visual{background:#10B981;border-color:#34D399}
-    .info-visual{width:60px;height:60px;flex-shrink:0;background:#94A3B8;border-radius:16px;overflow:hidden;display:flex;align-items:center;justify-content:center;position:relative;color:#fff}
+    .info-visual{width:clamp(50px,12vw,60px);height:clamp(50px,12vw,60px);flex-shrink:0;background:#94A3B8;border-radius:clamp(12px,3vw,16px);overflow:hidden;display:flex;align-items:center;justify-content:center;position:relative;color:#fff}
     .info-avatar{width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0}
     .info-content{display:flex;flex-direction:column;gap:2px}
-    .info-subtitle{font-size:.8rem;text-transform:uppercase;color:#64748B;font-weight:800}
-    .info-title{font-size:1.05rem;font-weight:800;color:#0F172A;line-height:1.3}
+    .info-subtitle{font-size:.75rem;text-transform:uppercase;color:#64748B;font-weight:800}
+    .info-title{font-size:clamp(.95rem,4vw,1.05rem);font-weight:800;color:#0F172A;line-height:1.3}
     .mini-spinner{width:24px;height:24px;border:3px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite}
     @keyframes spin{100%{transform:rotate(360deg)}}
   </style>
