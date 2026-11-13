@@ -5,55 +5,45 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Face ID - Check In</title>
   <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet">
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
-    body, html { width: 100%; height: 100%; background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%); display: flex; justify-content: center; align-items: center; padding: 15px; overflow: hidden; }
-    
-    .app-card { display: flex; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); padding: 16px; border-radius: 32px; box-shadow: 0 24px 48px rgba(0, 0, 0, 0.1); width: 100%; max-width: 480px; flex-direction: column; gap: 16px; animation: fadeIn 0.5s ease-out; }
-    @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-    
-    .camera-container { position: relative; width: 100%; aspect-ratio: 3 / 4; background: #0F172A; border-radius: 24px; overflow: hidden; -webkit-mask-image: -webkit-radial-gradient(white, black); }
-    #video { width: 100%; height: 100%; object-fit: cover; display: block; }
-    #video.front-camera, canvas.front-camera { transform: scaleX(-1); -webkit-transform: scaleX(-1); }
-    canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
-    
-    .icon-btn { position: absolute; top: 14px; right: 14px; width: 32px; height: 32px; background: transparent; color: #FFFFFF; border: none; outline: none; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 30; transition: transform 0.3s ease; -webkit-transition: -webkit-transform 0.3s ease;}
-    .icon-btn:hover { transform: scale(1.15) rotate(180deg); -webkit-transform: scale(1.15) rotate(180deg); }
-    .icon-btn svg { width: 18px; height: 18px; stroke: currentColor; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.8)); -webkit-filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.8));}
-    
-    .info-box { background: #F8FAFC; border: 2px solid #E2E8F0; border-radius: 20px; padding: 16px; display: flex; align-items: center; gap: 16px; min-height: 90px; transition: opacity 0.3s ease, visibility 0.3s ease; opacity: 1; visibility: visible; }
-    .info-box.hide { opacity: 0; visibility: hidden; pointer-events: none; }
-    .info-box.loading { background: #EEF2FF; border-color: #C7D2FE; }
-    .info-box.loading .info-visual { background: #6366F1; }
-    .info-box.loading .info-subtitle { color: #6366F1; }
-    .info-box.error { background: #FFFBEB; border-color: #FCD34D; }
-    .info-box.error .info-visual { background: #F59E0B; }
-    .info-box.success { background: #ECFDF5; border-color: #A7F3D0; }
-    .info-box.success .info-visual { background: #10B981; border: 2px solid #34D399; }
-    
-    .info-visual { width: 60px; height: 60px; flex-shrink: 0; background: #94A3B8; border-radius: 16px; overflow: hidden; display: flex; align-items: center; justify-content: center; position: relative; color: white; }
-    .info-avatar { width: 100%; height: 100%; object-fit: cover; z-index: 3; position: absolute; top: 0; left: 0; }
-    .info-content { display: flex; flex-direction: column; gap: 2px; overflow: hidden; }
-    .info-subtitle { font-size: 0.8rem; text-transform: uppercase; color: #64748B; font-weight: 800; }
-    .info-title { font-size: 1.05rem; font-weight: 800; color: #0F172A; white-space: normal; line-height: 1.3;}
-    
-    .mini-spinner { width: 24px; height: 24px; border: 3px solid rgba(255, 255, 255, 0.3); border-top-color: #ffffff; border-radius: 50%; animation: spin 0.8s linear infinite; -webkit-animation: spin 0.8s linear infinite; }
-    @keyframes spin { 100% { transform: rotate(360deg); -webkit-transform: rotate(360deg); } }
+    *{box-sizing:border-box;margin:0;padding:0;font-family:'Plus Jakarta Sans',sans-serif}
+    body,html{width:100%;height:100%;background:linear-gradient(135deg,#e0c3fc 0%,#8ec5fc 100%);display:flex;justify-content:center;align-items:center;padding:15px;overflow:hidden}
+    .app-card{display:flex;background:rgba(255,255,255,0.85);backdrop-filter:blur(20px);padding:16px;border-radius:32px;box-shadow:0 24px 48px rgba(0,0,0,0.1);width:100%;max-width:480px;flex-direction:column;gap:16px;animation:fadeIn .5s ease-out}
+    @keyframes fadeIn{from{opacity:0;transform:scale(0.95)}to{opacity:1;transform:scale(1)}}
+    .camera-container{position:relative;width:100%;aspect-ratio:3/4;background:#0F172A;border-radius:24px;overflow:hidden;-webkit-mask-image:-webkit-radial-gradient(white,black)}
+    #video{width:100%;height:100%;object-fit:cover;display:block}
+    #video.front-camera,canvas.front-camera{transform:scaleX(-1)}
+    canvas{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10}
+    .icon-btn{position:absolute;top:14px;right:14px;width:32px;height:32px;background:0 0;color:#FFF;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:30;transition:.3s}
+    .icon-btn:hover{transform:scale(1.15) rotate(180deg)}
+    .icon-btn svg{width:18px;height:18px;stroke:currentColor;filter:drop-shadow(0 2px 4px rgba(0,0,0,.8))}
+    .info-box{background:#F8FAFC;border:2px solid #E2E8F0;border-radius:20px;padding:16px;display:flex;align-items:center;gap:16px;min-height:90px;transition:.3s}
+    .info-box.hide{opacity:0;visibility:hidden;pointer-events:none}
+    .info-box.loading{background:#EEF2FF;border-color:#C7D2FE}
+    .info-box.loading .info-visual{background:#6366F1}
+    .info-box.loading .info-subtitle{color:#6366F1}
+    .info-box.error{background:#FFFBEB;border-color:#FCD34D}
+    .info-box.error .info-visual{background:#F59E0B}
+    .info-box.success{background:#ECFDF5;border-color:#A7F3D0}
+    .info-box.success .info-visual{background:#10B981;border-color:#34D399}
+    .info-visual{width:60px;height:60px;flex-shrink:0;background:#94A3B8;border-radius:16px;overflow:hidden;display:flex;align-items:center;justify-content:center;position:relative;color:#fff}
+    .info-avatar{width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0}
+    .info-content{display:flex;flex-direction:column;gap:2px}
+    .info-subtitle{font-size:.8rem;text-transform:uppercase;color:#64748B;font-weight:800}
+    .info-title{font-size:1.05rem;font-weight:800;color:#0F172A;line-height:1.3}
+    .mini-spinner{width:24px;height:24px;border:3px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite}
+    @keyframes spin{100%{transform:rotate(360deg)}}
   </style>
 </head>
 <body>
   <div class="app-card" id="app-card">
     <div class="camera-container" id="container">
-      <button id="btn-switch" class="icon-btn" onclick="switchCamera()" title="Đổi camera" style="display: none;">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 9a9 9 0 0 0-14.77-5.08L1 9"></path><polyline points="1 4 1 9 6 9"></polyline>
-          <path d="M3 15a9 9 0 0 0 14.77 5.08L23 15"></path><polyline points="23 20 23 15 18 15"></polyline>
-        </svg>
+      <button id="btn-switch" class="icon-btn" onclick="switchCamera()" title="Đổi camera" style="display:none">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 9a9 9 0 0 0-14.77-5.08L1 9"/><polyline points="1 4 1 9 6 9"/><path d="M3 15a9 9 0 0 0 14.77 5.08L23 15"/><polyline points="23 20 23 15 18 15"/></svg>
       </button>
       <video id="video" autoplay muted playsinline></video>
     </div>
-
     <div id="info-box" class="info-box loading">
       <div id="info-visual" class="info-visual"><div class="mini-spinner"></div></div>
       <div class="info-content">
@@ -62,174 +52,6 @@
       </div>
     </div>
   </div>
-
-  <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx3nnZ45NKjve47jyhHHYYUTYxYExbxcoBGbn5SzfBHKBQtvtQ8HQSoyLopq7S4fJb9/exec"; 
-    
-    let faceMatcher = null, canvas = null, displaySize = null, currentFacingMode = "user", currentStream = null, isRunning = false, employeeData = {}, lastScanLabel = ""; 
-    let isModelsLoaded = false, isDataReady = false, isCameraReady = false;
-
-    const video = document.getElementById('video'), container = document.getElementById('container'), btnSwitch = document.getElementById('btn-switch');
-    const infoBox = document.getElementById('info-box'), infoAvatar = document.getElementById('info-avatar'), infoTitle = document.getElementById('info-title'), infoSubtitle = document.getElementById('info-subtitle'), infoVisual = document.getElementById('info-visual');
-
-    function getDirectImageUrl(url) {
-      if (!url) return '';
-      const match = url.match(/[-\w]{25,}/);
-      return match ? `https://drive.google.com/thumbnail?id=${match[0]}&sz=w200-h200-c` : url;
-    }
-
-    function updateStatusUI(state, title, subtitle, avatarUrl = null) {
-      if (state === 'hide') { infoBox.className = 'info-box hide'; return; }
-      infoTitle.innerText = title; 
-      infoSubtitle.innerText = subtitle;
-      infoBox.className = `info-box ${state}`;
-      
-      if (avatarUrl) { 
-        infoVisual.innerHTML = `<img id="info-avatar" class="info-avatar" src="${getDirectImageUrl(avatarUrl)}">`;
-      } else if (state === 'loading') {
-        infoVisual.innerHTML = '<div class="mini-spinner"></div>';
-      } else if (state === 'error') {
-        infoVisual.innerHTML = '⚠️';
-      }
-    }
-
-    function stopCamera() {
-      isRunning = false;
-      if (currentStream) {
-        currentStream.getTracks().forEach(track => track.stop());
-        currentStream = null;
-      }
-      if (video) video.srcObject = null;
-    }
-
-    // NGỪNG SỬ DỤNG CAMERA KHI THOÁT HOẶC CHUYỂN TAB
-    document.addEventListener("visibilitychange", () => {
-      if (document.hidden) {
-        stopCamera();
-      } else {
-        if (isDataReady && !isRunning) startCamera(currentFacingMode);
-      }
-    });
-    window.addEventListener("pagehide", stopCamera);
-    window.addEventListener("beforeunload", stopCamera);
-
-    window.onload = () => { 
-      const ua = navigator.userAgent || navigator.vendor || window.opera;
-      const inApp = (ua.indexOf("FBAN") > -1) || (ua.indexOf("FBAV") > -1) || (ua.indexOf("Zalo") > -1) || (ua.indexOf("Instagram") > -1) || (ua.indexOf("TikTok") > -1);
-      
-      if (inApp) {
-        const url = window.location.href;
-        const noProtocolUrl = url.replace(/^https?:\/\//, '');
-        if (/android/i.test(ua)) {
-          window.location.href = `intent://${noProtocolUrl}#Intent;scheme=https;package=com.android.chrome;end`;
-        } else if (/iphone|ipad|ipod/i.test(ua)) {
-          window.location.href = `googlechrome://${noProtocolUrl}`;
-        }
-        updateStatusUI('error', 'Vui lòng ấn ( ... ) góc phải, chọn "Mở trong Safari / Chrome"', 'TRÌNH DUYỆT BỊ CHẶN CAMERA');
-        return; 
-      }
-
-      startCamera(currentFacingMode); 
-      loadModels();                   
-      fetchDatabaseAsync();  
-    }
-
-    async function loadModels() {
-      try {
-        await faceapi.nets.tinyFaceDetector.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models');
-        await faceapi.nets.faceLandmark68Net.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models');
-        await faceapi.nets.faceRecognitionNet.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models');
-        isModelsLoaded = true; checkAndStartApp();
-      } catch (e) { updateStatusUI('error', 'Lỗi tải hệ thống AI', 'CẢNH BÁO'); }
-    }
-
-    async function fetchDatabaseAsync() {
-      try {
-        const response = await fetch(SCRIPT_URL);
-        const result = await response.json();
-        if (result.status === "success") {
-          const labeledFaceDescriptors = [];
-          for (let i = 0; i < result.data.length; i++) {
-            const empId = result.data[i][0], rawFaceData = result.data[i][2], empImage = result.data[i][3]; 
-            if (!empId || !rawFaceData) continue;
-            employeeData[empId] = { name: "ID: " + empId, image: empImage };
-            try {
-              const parsedArray = typeof rawFaceData === 'string' ? JSON.parse(rawFaceData) : rawFaceData;
-              if (Array.isArray(parsedArray)) labeledFaceDescriptors.push(new faceapi.LabeledFaceDescriptors(String(empId), [new Float32Array(parsedArray)]));
-            } catch (err) {}
-          }
-          if (labeledFaceDescriptors.length > 0) faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors, 0.38);
-        }
-      } catch (error) {}
-      isDataReady = true; checkAndStartApp();
-    }
-
-    async function startCamera(facingMode) {
-      stopCamera();
-      isCameraReady = false;
-      try {
-        currentStream = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 1080 }, height: { ideal: 1920 }, facingMode: facingMode } });
-        video.srcObject = currentStream;
-        video.className = facingMode === "user" ? "front-camera" : "back-camera";
-        if (canvas) canvas.className = video.className;
-        video.onloadedmetadata = () => {
-          video.play();
-          if (!canvas) { canvas = faceapi.createCanvasFromMedia(video); container.append(canvas); }
-          displaySize = { width: video.videoWidth, height: video.videoHeight };
-          faceapi.matchDimensions(canvas, displaySize);
-          isCameraReady = true; checkAndStartApp();
-        };
-      } catch (err) {
-        updateStatusUI('error', 'Trình duyệt bị từ chối cấp quyền Camera. Hãy tải lại!', 'BỊ TỪ CHỐI CAMERA');
-      }
-    }
-
-    function switchCamera() {
-      updateStatusUI('loading', 'Đang chuyển camera...', 'HỆ THỐNG');
-      btnSwitch.style.display = 'none';
-      currentFacingMode = (currentFacingMode === "user") ? "environment" : "user";
-      startCamera(currentFacingMode);
-    }
-
-    function checkAndStartApp() {
-      if (isModelsLoaded && isDataReady && isCameraReady && !isRunning) {
-        updateStatusUI('hide'); 
-        btnSwitch.style.display = 'flex';
-        if (faceMatcher) startSmoothRecognition();
-      }
-    }
-
-    async function startSmoothRecognition() {
-      isRunning = true; updateStatusUI('hide');
-      const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.6 });
-      const ctx = canvas.getContext('2d');
-
-      const detectFrame = async () => {
-        if (!isRunning || video.paused || !faceMatcher) return;
-        try {
-          const detection = await faceapi.detectSingleFace(video, options).withFaceLandmarks().withFaceDescriptor();
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          if (!detection) {
-            if (lastScanLabel !== "scanning") { updateStatusUI('hide'); lastScanLabel = "scanning"; }
-          } else {
-            const resizedDetection = faceapi.resizeResults(detection, displaySize);
-            const bestMatch = faceMatcher.findBestMatch(resizedDetection.descriptor);
-            if (bestMatch.label === "unknown") {
-              if (lastScanLabel !== "scanning") { updateStatusUI('hide'); lastScanLabel = "scanning"; }
-            } else {
-              new faceapi.draw.DrawBox(resizedDetection.detection.box, { boxColor: "#10B981", lineWidth: 3 }).draw(canvas);
-              if (lastScanLabel !== bestMatch.label) {
-                lastScanLabel = bestMatch.label;
-                const emp = employeeData[bestMatch.label];
-                updateStatusUI('success', emp.name, 'NHẬN DIỆN THÀNH CÔNG', emp.image);
-              }
-            }
-          }
-        } catch (err) {}
-        if (isRunning) requestAnimationFrame(detectFrame);
-      };
-      detectFrame();
-    }
-  </script>
+  <script src="main.js"></script>
 </body>
 </html>
